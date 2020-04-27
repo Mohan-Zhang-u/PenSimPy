@@ -1,18 +1,28 @@
-from BatchRunFlags import BatchRunFlags
+from pensim_classes.BatchRunFlags import BatchRunFlags
 import numpy as np
 import time
-from indpensim_run import indpensim_run
+from pensim_methods.indpensim_run import indpensim_run
 import statistics
-from show_params import show_params
-from save_csv import save_csv
+from helper.show_params import show_params
+from helper.save_csv import save_csv
 
 if __name__ == "__main__":
     total_runs = 1
     num_of_batches = 1
     plot_res = True
-    save_res = True
+    save_res = False
+    using_Raman = True
 
     batch_run_flags = BatchRunFlags(num_of_batches)
+
+    if using_Raman:
+        print(f"=== Raman...")
+        num_of_batches = 2
+        batch_run_flags.Batch_fault_order_reference = np.array([[0], [1]], dtype=float)
+        batch_run_flags.Control_strategy = np.array([[0, 1]], dtype=float)
+        batch_run_flags.Batch_length = np.array([[1, 0]], dtype=float)
+        batch_run_flags.Raman_spec = np.array([[1, 2]], dtype=float)
+
     peni_products = []
 
     for run_id in range(total_runs):
@@ -41,7 +51,7 @@ if __name__ == "__main__":
         median_pH = []
         median_T = []
 
-        for Batch_no in range(1, num_of_batches + 1):
+        for Batch_no in range(2, num_of_batches + 1):
             print(f"==== Batch_no: {Batch_no}")
             t = time.time()
             Xref, h = indpensim_run(Batch_no, batch_run_flags, Recipe_Fs_sp)
@@ -79,4 +89,3 @@ if __name__ == "__main__":
     # Plot the last res
     if plot_res:
         show_params(Xref)
-

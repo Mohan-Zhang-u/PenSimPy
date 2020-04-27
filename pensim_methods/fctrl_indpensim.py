@@ -1,8 +1,8 @@
 import math
-from PIDSimple3 import PIDSimple3
+from helper.PIDSimple3 import PIDSimple3
 import numpy as np
 from scipy.interpolate import interp1d
-from U import U
+from pensim_classes.U import U
 
 
 def fctrl_indpensim(x, xd, k, h, T, ctrl_flags, Recipe_Fs_sp):
