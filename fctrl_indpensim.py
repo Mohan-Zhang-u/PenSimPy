@@ -329,7 +329,7 @@ def fctrl_indpensim(x, xd, k, h, T, ctrl_flags, Recipe_Fs_sp):
             PAA_err1 = PAA_sp - x.PAA.y[k - 3]
 
         # builds the temperature history of current and previous two samples
-        if k * h < 10:
+        if k * h >= 10:
             if k == 1 or k == 2:
                 temp = x.PAA_pred.y[0]
                 temp1 = x.PAA_pred.y[0]
