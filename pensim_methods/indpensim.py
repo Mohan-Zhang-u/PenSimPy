@@ -7,6 +7,7 @@ from pensim_methods.indpensim_ode_py import indpensim_ode_py
 from pensim_methods.raman_sim import raman_sim
 from pensim_methods.substrate_prediction import substrate_prediction
 from tqdm.auto import tqdm
+from scipy.io import loadmat
 
 
 def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
@@ -31,6 +32,12 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
     # User control inputs
     # converts from pH to H+ conc.
     x0.pH = 10 ** (-x0.pH)
+
+    # Load Raman Spectra Reference
+    reference_Spectra_2200 = np.genfromtxt('./spectra_data/reference_Specra.txt', dtype='str')
+
+    # Load Matlab Model
+    Matlab_model = loadmat('./Matlab_model/PAA_PLS_model.mat')['b']
 
     # main loop
     for k in tqdm(range(1, N + 1)):
@@ -297,10 +304,10 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
         # Adding in Raman Spectra
         if k > 10:
             if ctrl_flags.Raman_spec == 1:
-                x = raman_sim(k, x, h, T)
+                x = raman_sim(k, x, h, T, reference_Spectra_2200)
             elif ctrl_flags.Raman_spec == 2:
-                x = raman_sim(k, x, h, T)
-                x = substrate_prediction(k, x)
+                x = raman_sim(k, x, h, T, reference_Spectra_2200)
+                x = substrate_prediction(k, x, Matlab_model)
 
         # Off-line measurements recorded
         if np.remainder(t_span[-1], ctrl_flags.Off_line_m) == 0 or t_span[-1] == 1 or t_span[-1] == T:
