@@ -9,3 +9,5 @@ class Channel:
         self.tUnit = 0
         self.t = 0
         self.y = 0
+        self.Wavelength = None
+        self.Intensity = None

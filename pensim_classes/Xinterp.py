@@ -1,4 +1,4 @@
-from Channel import Channel
+from pensim_classes.Channel import Channel
 
 
 class Xinterp:

@@ -17,5 +17,13 @@ def create_channel(channel, **kwargs):
         channel.name = kwargs['name']
         channel.yUnit = kwargs['yUnit']
         channel.tUnit = kwargs['tUnit']
-        channel.t = kwargs['time'].T.tolist()[0]
-        channel.y = kwargs['value'].T.tolist()[0]
+        if kwargs.get('time') is not None:
+            channel.t = kwargs['time'].T.tolist()[0]
+        if kwargs.get('value') is not None:
+            channel.y = kwargs['value'].T.tolist()[0]
+
+        if kwargs.get('Wavelength') is not None:
+            channel.Wavelength = kwargs['Wavelength'].T.tolist()[0]
+
+        if kwargs.get('Intensity') is not None:
+            channel.Intensity = kwargs['Intensity']

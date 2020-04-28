@@ -74,6 +74,10 @@ def show_params(Xref):
     plt.title("Heating water")
     plt.plot(Xref.Fh.t, Xref.Fh.y)
     plt.xticks([])
+    plt.subplot(4, 4, 14)
+    plt.title("Raman Spectra")
+    plt.plot(Xref.Raman_Spec.Wavelength, Xref.Raman_Spec.Intensity)
+    plt.xticks([])
 
     # plt.figure()
     # plt.title("Sequential batch control")

@@ -1,7 +1,7 @@
 import numpy as np
-from X import X
-from Channel import Channel
-from create_channel import create_channel
+from pensim_classes.X import X
+from pensim_classes.Channel import Channel
+from pensim_methods.create_channel import create_channel
 
 
 def create_batch(h, T):
@@ -299,5 +299,18 @@ def create_batch(h, T):
     create_channel(channel,
                    **{'name': 'Batch reference', 'yUnit': 'Batch ref', 'tUnit': 'Batch ref', 'time': t, 'value': y})
     x.Batch_ref = channel
+
+    channel = Channel()
+    create_channel(channel,
+                   **{'name': 'PAA Prediction.', 'yUnit': 'PAA_pred (g L^{-1})', 'tUnit': 'h', 'time': t, 'value': y})
+    x.PAA_pred = channel
+
+    # Raman Spectra: Wavelength & Intensity
+    Wavelength = np.zeros((2200, 1), dtype=float)
+    Intensity = np.zeros((2200, int(T / h)), dtype=float)
+    channel = Channel()
+    create_channel(channel, **{'name': 'Raman Spectra', 'yUnit': 'a.u', 'tUnit': 'cm^-1',
+                               'Wavelength': Wavelength, 'Intensity': Intensity})
+    x.Raman_Spec = channel
 
     return x

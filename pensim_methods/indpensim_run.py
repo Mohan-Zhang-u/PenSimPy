@@ -1,12 +1,12 @@
-from CtrlFlags import CtrlFlags
+from pensim_classes.CtrlFlags import CtrlFlags
 import numpy as np
 from scipy.signal import lfilter
-from create_channel import create_channel
-from Channel import Channel
-from parameter_list import parameter_list
-from X0 import X0
-from Xinterp import Xinterp
-from indpensim import indpensim
+from pensim_methods.create_channel import create_channel
+from pensim_classes.Channel import Channel
+from pensim_methods.parameter_list import parameter_list
+from pensim_classes.X0 import X0
+from pensim_classes.Xinterp import Xinterp
+from pensim_methods.indpensim import indpensim
 
 
 def indpensim_run(Batch_no, batch_run_flags, Recipe_Fs_sp):
