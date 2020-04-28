@@ -48,7 +48,7 @@ def show_params(Xref):
     plt.xticks([])
     plt.subplot(4, 4, 7)
     plt.title("Phenylacetic acid flowrate")
-    plt.plot(Xref.Fpaa.t, Xref.Fpaa.y)
+    plt.plot(Xref.Fpaa.t, Xref.Fpaa.y, 'g')
     plt.xticks([])
     plt.subplot(4, 4, 8)
     plt.title("pH")
