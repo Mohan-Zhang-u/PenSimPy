@@ -10,7 +10,7 @@ if __name__ == "__main__":
     total_runs = 1
     num_of_batches = 1
     plot_res = True
-    save_res = False
+    save_res = True
     using_Raman = True
 
     batch_run_flags = BatchRunFlags(num_of_batches)
@@ -83,7 +83,7 @@ if __name__ == "__main__":
 
         # Save data
         if save_res:
-            save_csv(run_id, avg_pHs, avg_Ts, penicillin_yields, median_pH, median_T)
+            save_csv(run_id, avg_pHs, avg_Ts, penicillin_yields, median_pH, median_T, Xref)
 
     print(f"=== peni_products: {peni_products}")
     # Plot the last res
