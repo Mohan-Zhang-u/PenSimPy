@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 
-def save_csv(run_id, avg_pHs, avg_Ts, penicillin_yields, median_pH, median_T):
+def save_csv(run_id, avg_pHs, avg_Ts, penicillin_yields, median_pH, median_T, Xref):
     """
     Save data as csv
     :param run_id:
@@ -11,6 +11,7 @@ def save_csv(run_id, avg_pHs, avg_Ts, penicillin_yields, median_pH, median_T):
     :param penicillin_yields:
     :param median_pH:
     :param median_T:
+    :param Xref:
     :return:
     """
     if not os.path.exists("./data"):
@@ -25,4 +26,10 @@ def save_csv(run_id, avg_pHs, avg_Ts, penicillin_yields, median_pH, median_T):
 
     df = pd.DataFrame(data={"median_pH": median_pH, "median_T": median_T})
     file_path = os.path.join(output_dir, 'batch_median_trend.csv')
+    df.to_csv(file_path, sep=',', index=False)
+
+    wavelength = Xref.Raman_Spec.Wavelength
+    df = pd.DataFrame(Xref.Raman_Spec.Intensity.T, columns=wavelength)
+    df = df[df.columns[::-1]]
+    file_path = os.path.join(output_dir, 'raman.csv')
     df.to_csv(file_path, sep=',', index=False)
