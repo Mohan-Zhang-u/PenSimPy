@@ -3,21 +3,19 @@ import math
 from helper.smooth_py import smooth_py
 
 
-def raman_sim(k, x, h, T, reference_Spectra_2200):
+def raman_sim(k, x, h, T, raman_spectra):
     # Building history of Raman Spectra
     Wavenumber_max = 2200
     Intensity_shift1 = np.ones((Wavenumber_max, 1), dtype=int)
 
-    for j in range(1, Wavenumber_max + 1):
-        b = j / (Wavenumber_max * 0.5)
-        Intensity_shift1[j - 1, 0] = math.exp(b) - 0.5
+    Intensity_shift1[:, 0] = [math.exp((j + 1) / 1100) - 0.5 for j in range(Wavenumber_max)]
 
     # todo check here, get rid of a list
     New_Spectra = np.ones((Wavenumber_max, 1), dtype=int)
 
-    a = -0.00178143846614472 * 0.1
+    a = -0.000178143846614472
     b = 1.05644816081515
-    c = -0.0681439987249108 * 0.1
+    c = -0.00681439987249108
     d = -0.02
     Product_S = x.P.y[k - 1] / 40
     Biomass_S = x.X.y[k - 1] / 40
@@ -25,18 +23,17 @@ def raman_sim(k, x, h, T, reference_Spectra_2200):
     Time_S = k / (T / h)
     Intensity_increase1 = a * Biomass_S + b * Product_S + c * Viscosity_S + d * Time_S
     scaling_factor = 370000
-    Gluc_increase = 800000 * 3 / 1400
+    Gluc_increase = 1714.2857142857142
 
-    PAA_increase = 1700000 / 1000
+    PAA_increase = 1700
     Prod_increase = 100000
 
     # Loading in the reference Raman Spectral file
-    x.Raman_Spec.Wavelength = reference_Spectra_2200[0:Wavenumber_max, 0].astype('int').tolist()
-    reference_spectra = reference_Spectra_2200[0:Wavenumber_max, 1].astype('float').tolist()
-    New_Spectra = Intensity_increase1 * scaling_factor * Intensity_shift1 + np.array([reference_spectra]).T
+    New_Spectra = Intensity_increase1 * scaling_factor * Intensity_shift1 + np.array([raman_spectra]).T
     x.Raman_Spec.Intensity[:, k - 1] = np.squeeze(New_Spectra).tolist()
 
-    random_noise = np.ones((Wavenumber_max + 1, 1), dtype=int)
+    random_noise = [-1] * Wavenumber_max
+
     random_noise_summed = np.ones((Wavenumber_max, 1), dtype=int)
     New_Spectra_noise = np.ones((Wavenumber_max, 1), dtype=int)
 
@@ -51,10 +48,8 @@ def raman_sim(k, x, h, T, reference_Spectra_2200):
         else:
             random_noise[i] = -noise_factor
 
-    for i in range(Wavenumber_max):
-        random_noise_summed[i] = sum(np.squeeze(random_noise).tolist()[0:i])
-
-    random_noise_summed_smooth = smooth_py(np.squeeze(random_noise_summed).tolist(), 25)
+    random_noise_summed = np.cumsum(random_noise)
+    random_noise_summed_smooth = smooth_py(random_noise_summed, 25)
 
     New_Spectra_noise = New_Spectra + 10 * np.array([random_noise_summed_smooth]).T
 
@@ -77,7 +72,7 @@ def raman_sim(k, x, h, T, reference_Spectra_2200):
     peaka_std_dev = peaka_width / 2
     mean = 0
     for xx in range(-peaka_lenght, peaka_lenght + 1):
-        Glucose_raw_peaks_G_peaka[xx + peaka - 1] = (peaka_std_dev * np.sqrt(2 * math.pi)) ** -1 * math.exp(
+        Glucose_raw_peaks_G_peaka[xx + peaka - 1] = (peaka_std_dev * (2 * math.pi) ** .5) ** -1 * math.exp(
             -0.5 * ((xx - mean) / peaka_std_dev) ** 2)
 
     # Peak B
@@ -87,7 +82,7 @@ def raman_sim(k, x, h, T, reference_Spectra_2200):
     peakb_std_dev = peakb_width / 2
     mean = 0
     for xx in range(-peakb_lenght, peakb_lenght + 1):
-        Glucose_raw_peaks_G_peakb[xx + peakb - 1] = (peakb_std_dev * np.sqrt(2 * math.pi)) ** -1 * math.exp(
+        Glucose_raw_peaks_G_peakb[xx + peakb - 1] = (peakb_std_dev * (2 * math.pi) ** .5) ** -1 * math.exp(
             -0.5 * ((xx - mean) / peakb_std_dev) ** 2) / 4.3
 
     # Peak C
@@ -97,7 +92,7 @@ def raman_sim(k, x, h, T, reference_Spectra_2200):
     peakc_std_dev = peakc_width / 2
     mean = 0
     for xx in range(-peakc_lenght, peakc_lenght + 1):
-        Glucose_raw_peaks_G_peakc[xx + peakc - 1] = (peakc_std_dev * np.sqrt(2 * math.pi)) ** -1 * math.exp(
+        Glucose_raw_peaks_G_peakc[xx + peakc - 1] = (peakc_std_dev * (2 * math.pi) ** .5) ** -1 * math.exp(
             -0.5 * ((xx - mean) / peakc_std_dev) ** 2)
 
     # PAA  peaks
@@ -108,7 +103,7 @@ def raman_sim(k, x, h, T, reference_Spectra_2200):
     peaka_std_dev = peaka_width / 2
     mean = 0
     for xx in range(-peaka_lenght, peaka_lenght + 1):
-        PAA_raw_peaks_G_peaka[xx + peaka - 1] = (peaka_std_dev * np.sqrt(2 * math.pi)) ** -1 * math.exp(
+        PAA_raw_peaks_G_peaka[xx + peaka - 1] = (peaka_std_dev * (2 * math.pi) ** .5) ** -1 * math.exp(
             -0.5 * ((xx - mean) / peaka_std_dev) ** 2)
 
     # Peak B
@@ -118,7 +113,7 @@ def raman_sim(k, x, h, T, reference_Spectra_2200):
     peakb_std_dev = peakb_width / 2
     mean = 0
     for xx in range(-peakb_lenght, peakb_lenght + 1):
-        PAA_raw_peaks_G_peakb[xx + peakb - 1] = ((peakb_std_dev * np.sqrt(2 * math.pi)) ** -1 * math.exp(
+        PAA_raw_peaks_G_peakb[xx + peakb - 1] = ((peakb_std_dev * (2 * math.pi) ** .5) ** -1 * math.exp(
             -0.5 * ((xx - mean) / peakb_std_dev) ** 2) / 4.3)
 
     # Adding in  Peak aPen G Peak
@@ -128,7 +123,7 @@ def raman_sim(k, x, h, T, reference_Spectra_2200):
     peakPa_std_dev = peakPa_width / 2
     mean = 0
     for xx in range(-peakPa_lenght, peakPa_lenght + 1):
-        Product_raw_peaka[xx + peakPa - 1] = (peakPa_std_dev * np.sqrt(2 * math.pi)) ** -1 * math.exp(
+        Product_raw_peaka[xx + peakPa - 1] = (peakPa_std_dev * (2 * math.pi) ** .5) ** -1 * math.exp(
             -0.5 * ((xx - mean) / peakPa_std_dev) ** 2)
 
     # Adding in  Peak b for Pen G Peak
@@ -138,7 +133,7 @@ def raman_sim(k, x, h, T, reference_Spectra_2200):
     peakPb_std_dev = peakPb_width / 2
     mean = 0
     for xx in range(-peakPb_lenght, peakPb_lenght + 1):
-        Product_raw_peakb[xx + peakPb - 1] = (peakPb_std_dev * np.sqrt(2 * math.pi)) ** -1 * math.exp(
+        Product_raw_peakb[xx + peakPb - 1] = (peakPb_std_dev * (2 * math.pi) ** .5) ** -1 * math.exp(
             -0.5 * ((xx - mean) / peakPb_std_dev) ** 2)
 
     total_peaks_G = Glucose_raw_peaks_G_peaka + Glucose_raw_peaks_G_peakb + Glucose_raw_peaks_G_peakc

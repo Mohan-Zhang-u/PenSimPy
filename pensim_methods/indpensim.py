@@ -26,8 +26,6 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
     N = int(T / h)
     h_ode = h / 20
     t = np.arange(0, T + h, h)
-    # creates batch structure
-    x = create_batch(h, T)
 
     # User control inputs
     # converts from pH to H+ conc.
@@ -35,6 +33,11 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
 
     # Load Raman Spectra Reference
     reference_Spectra_2200 = np.genfromtxt('./spectra_data/reference_Specra.txt', dtype='str')
+    raman_wavelength = reference_Spectra_2200[0:2200, 0].astype('int').tolist()
+    raman_spectra = reference_Spectra_2200[0:2200, 1].astype('float').tolist()
+
+    # creates batch structure
+    x = create_batch(h, T)
 
     # Load Matlab Model
     Matlab_model = loadmat('./Matlab_model/PAA_PLS_model.mat')['b']
@@ -304,9 +307,9 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
         # Adding in Raman Spectra
         if k > 10:
             if ctrl_flags.Raman_spec == 1:
-                x = raman_sim(k, x, h, T, reference_Spectra_2200)
+                x = raman_sim(k, x, h, T, raman_spectra)
             elif ctrl_flags.Raman_spec == 2:
-                x = raman_sim(k, x, h, T, reference_Spectra_2200)
+                x = raman_sim(k, x, h, T, raman_spectra)
                 x = substrate_prediction(k, x, Matlab_model)
 
         # Off-line measurements recorded
@@ -339,5 +342,7 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
         if x.pH.y[k] != 0:
             x.pH.y[k] = -math.log(x.pH.y[k]) / math.log(10)
         x.Q.y[k] = x.Q.y[k] / 1000
+
+    x.Raman_Spec.Wavelength = raman_wavelength
 
     return x

@@ -4,7 +4,7 @@ import numpy as np
 
 def substrate_prediction(k, x, model):
     j = k - 1
-    Raman_Spec_sg = savgol_filter(x.Raman_Spec.Intensity[:, j - 1].tolist(), 5, 2)
+    Raman_Spec_sg = savgol_filter(x.Raman_Spec.Intensity[:, j - 1], 5, 2)
     Raman_Spec_sg_d = np.diff(Raman_Spec_sg)
     PAA_peaks_Spec = []
     PAA_peaks_Spec.extend(Raman_Spec_sg_d[349:500])
