@@ -1,7 +1,8 @@
 ![alt text](figures/logo_light.png "Logo Title Text 1")
 # PenSimPy
 Python version of [IndPenSim](http://www.industrialpenicillinsimulation.com/). Sequential batch control, Raman spectra simulation, PRBS (pseudo random binary signal),
-Faults (Aeration rate fault, Vessel back pressure fault...) and Substrate prediction are enabled.
+Faults (Aeration rate fault, Vessel back pressure fault...) and Substrate prediction are enabled. 
+An AI web application based on PenSimPy can be found [here](http://quartic.ddns.net:8000/).
 
 #### How to execute
 ```
