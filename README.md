@@ -1,6 +1,5 @@
 ![alt text](figures/logo_light.png "Logo Title Text 1")
-## PenSimPy
-
+# PenSimPy
 Python version of [IndPenSim](http://www.industrialpenicillinsimulation.com/)
 
 #### How to execute
@@ -20,12 +19,12 @@ using_Raman = True
 #### Results
 ##### Inputs
 <p align="center">
-  <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/Figure_2.png" width="50%">
+  <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/Figure_2.png" width="60%">
 </p>
 
 ##### Outputs
 <p align="center">
-  <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/Figure_1.png" width="50%">
+  <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/Figure_1.png" width="60%">
 </p>
 
 ##### Csv data generation
