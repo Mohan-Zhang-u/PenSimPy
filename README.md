@@ -1,4 +1,4 @@
-# PenSimPy
+# PenSimPy ![alt text](https://github.com/Quarticai/PenSimPy/blob/master/figures/logo_light.png)
 Python version of [IndPenSim](http://www.industrialpenicillinsimulation.com/)
 
 #### How to execute
