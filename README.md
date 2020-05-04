@@ -35,6 +35,6 @@ using_Raman = True
 #### Benchmark
 ##### Time cost with Raman Simulation
 <p align="center">
-  <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/benchmark.png" width="50%">
+  <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/benchmark.png" width="80%">
 </p>
 
