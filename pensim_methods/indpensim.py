@@ -178,11 +178,8 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
             par.extend(u00)
             y_sol = odeint(indpensim_ode_py, x00, t_span, tfirst=True, args=(par,))
 
-        # """
         # Defining minimum value for all variables for numerical stability
-        for i in range(1, 32):
-            if y_sol[-1][i - 1] <= 0:
-                y_sol[-1][i - 1] = 0.001
+        y_sol[-1][0:31] = [0.001 if ele <= 0 else ele for ele in y_sol[-1][0:31]]
 
         # Saving all manipulated variables
         x.Fg.t[k - 1] = t_span[-1]
@@ -340,7 +337,7 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
 
     # convert to pH from H+ concentration
     x.pH.y = [-math.log(pH) / math.log(10) if pH != 0 else pH for pH in x.pH.y]
-    x.Q.y = [Q/1000 for Q in x.Q.y]
+    x.Q.y = [Q / 1000 for Q in x.Q.y]
 
     x.Raman_Spec.Wavelength = raman_wavelength
 

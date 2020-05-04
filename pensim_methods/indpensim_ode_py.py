@@ -119,37 +119,34 @@ def indpensim_ode_py(t, y, par):
     alpha_1 = par[104]
 
     # process inputs
-    inhib_flag = par[0 + 105]
-    Fs = par[1 + 105]
-    Fg = (par[2 + 105] / 60)
-    RPM = par[3 + 105]
-    Fc = par[4 + 105]
-    Fh = par[5 + 105]
-    Fb = par[6 + 105]
-    Fa = par[7 + 105]
-    step1 = par[8 + 105]
-    Fw = par[9 + 105]
+    inhib_flag = par[105]
+    Fs = par[106]
+    Fg = (par[107] / 60)
+    RPM = par[108]
+    Fc = par[109]
+    Fh = par[110]
+    Fb = par[111]
+    Fa = par[112]
+    step1 = par[113]
+    Fw = par[114]
     Fw = 0 if Fw < 0 else Fw
-    pressure = par[10 + 105]
+    pressure = par[115]
     # Viscosity flag
-    if par[25 + 105] == 0:
-        viscosity = y[9]
-    else:
-        viscosity = par[11 + 105]
+    viscosity = y[9] if par[130] == 0 else par[116]
 
-    F_discharge = par[12 + 105]
-    Fpaa = par[13 + 105]
-    Foil = par[14 + 105]
-    NH3_shots = par[15 + 105]
-    dist_flag = par[16 + 105]
-    distMuP = par[17 + 105]
-    distMuX = par[18 + 105]
-    distsc = par[19 + 105]
-    distcoil = par[20 + 105]
-    distabc = par[21 + 105]
-    distPAA = par[22 + 105]
-    distTcin = par[23 + 105]
-    distO_2_in = par[24 + 105]
+    F_discharge = par[117]
+    Fpaa = par[118]
+    Foil = par[119]
+    NH3_shots = par[120]
+    dist_flag = par[121]
+    distMuP = par[122]
+    distMuX = par[123]
+    distsc = par[124]
+    distcoil = par[125]
+    distabc = par[126]
+    distPAA = par[127]
+    distTcin = par[128]
+    distO_2_in = par[129]
     pho_b = (1100 + y[3] + y[11] + y[12] + y[13] + y[14])
 
     if dist_flag == 1:
@@ -178,7 +175,7 @@ def indpensim_ode_py(t, y, par):
     h_b = h_b * (1 - epsilon)
 
     # Calculating log mean pressure of vessel
-    pressure_bottom = 1 + pressure + ((pho_b * h_b) * 9.81 * 1e-5)
+    pressure_bottom = 1 + pressure + ((pho_b * h_b) * 9.81e-5)
     pressure_top = 1 + pressure
     log_mean_pressure = (pressure_bottom - pressure_top) / (math.log(pressure_bottom / pressure_top))
     total_pressure = log_mean_pressure
@@ -258,8 +255,7 @@ def indpensim_ode_py(t, y, par):
     phi[0] = y[26]
 
     for k in range(2, 11):
-        r_mean = 1.5e-4 + (k - 2) * delta_r
-        phi[k - 1] = ((4 * math.pi * r_mean ** 3) / 3) * y[n] * delta_r
+        phi[k - 1] = ((4 * math.pi * (1.5e-4 + (k - 2) * delta_r) ** 3) / 3) * y[n] * delta_r
         n += 1
 
     # Total vacuole volume
@@ -359,7 +355,7 @@ def indpensim_ode_py(t, y, par):
     N = RPM / 60
     D_imp = 2 * r_imp
     unaerated_power = (n_imp * Po * pho_b * (N ** 3) * (D_imp ** 5))
-    P_g = 0.706 * (((unaerated_power ** 2) * (N) * D_imp ** 3) / (Fg ** 0.56)) ** 0.45
+    P_g = 0.706 * (((unaerated_power ** 2) * N * D_imp ** 3) / (Fg ** 0.56)) ** 0.45
     P_n = P_g / unaerated_power
     variable_power = (n_imp * Po * pho_b * (N ** 3) * (D_imp ** 5) * P_n) / 1000
 
@@ -392,9 +388,9 @@ def indpensim_ode_py(t, y, par):
 
     # O_2 off-gas
     Vg = epsilon * V_m
-    Qfg_in = 60 * Fg * 1000 * 32 / 22.4
-    Qfg_out = 60 * Fg * (N2_in / (1 - y[2] - y[27] / 100)) * 1000 * 32 / 22.4
-    dy[2] = (Qfg_in * O_2_in - Qfg_out * y[2] - 0.001 * OTR * V_m * 60) / (Vg * 28.97 * 1000 / 22.4)
+    Qfg_in = 85714.28571428572 * Fg
+    Qfg_out = Fg * (N2_in / (1 - y[2] - y[27] / 100)) * 85714.28571428572
+    dy[2] = (Qfg_in * O_2_in - Qfg_out * y[2] - 0.06 * OTR * V_m) / (Vg * 1293.3035714285716)
 
     # Penicillin production rate
     dy[3] = r_p - y[3] * dilution / y[4]
@@ -418,8 +414,7 @@ def indpensim_ode_py(t, y, par):
         pH_balance = 1
 
     # Calculation of ion addition
-    B = (y[6] * y[4] + ca * Fa * step1 + cb * Fb * step1) / (y[4] + Fb * step1 + Fa * step1)
-    B = -B
+    B = -(y[6] * y[4] + ca * Fa * step1 + cb * Fb * step1) / (y[4] + Fb * step1 + Fa * step1)
 
     if pH_balance == 1:
         dy[6] = -gamma1 * (r_b0 + r_e1 + r_d4 + r_d1 + m_ph * total_X) - gamma1 * r_p - gamma2 * pH_dis + (
@@ -472,11 +467,10 @@ def indpensim_ode_py(t, y, par):
     # CO_2
     total_X_CO2 = y[11] + y[12]
     CER = total_X_CO2 * q_co2 * V
-    dy[27] = (((60 * Fg * 44 * 1000) / 22.4) * C_CO2_in + CER - ((60 * Fg * 44 * 1000) / 22.4) * y[27]) / (
-            Vg * 28.97 * 1000 / 22.4)
+    dy[27] = (117857.14285714287 * Fg * C_CO2_in + CER - 117857.14285714287 * Fg * y[27]) / (Vg * 1293.3035714285716)
 
     # dissolved CO_2
-    Henrys_c_co2 = (math.exp(11.25 - 395.9 / (y[7] - 175.9))) / (44 * 100)
+    Henrys_c_co2 = (math.exp(11.25 - 395.9 / (y[7] - 175.9))) / 4400
     C_star_CO2 = (total_pressure * y[27]) / Henrys_c_co2
     dy[28] = kla * delta_c_0 * (C_star_CO2 - y[28]) - y[28] * dilution / y[4]
 
