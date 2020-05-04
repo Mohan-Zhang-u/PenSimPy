@@ -1,4 +1,6 @@
-# PenSimPy ![alt text](https://github.com/Quarticai/PenSimPy/blob/master/figures/logo_light.png)
+# PenSimPy :
+![alt text](https://github.com/Quarticai/PenSimPy/blob/master/figures/logo_light.png "Logo Title Text 1")
+
 Python version of [IndPenSim](http://www.industrialpenicillinsimulation.com/)
 
 #### How to execute
