@@ -21,7 +21,7 @@ using_Raman = True
 
 ##### Figures for outputs
 <p align="center">
-  <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/Figure_1.png" width="80%">
+  <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/Figure_1.png" width="50%">
 </p>
 
 ##### Csv data paths
