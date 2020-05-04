@@ -119,7 +119,7 @@ def indpensim_run(Batch_no, batch_run_flags, Recipe_Fs_sp):
         PAA_c = 530000 + 20000 * np.random.randn(1)[0]
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
 
-        N_conc_paa = 2 * 75000 + 2000 * np.random.randn(1)[0]
+        N_conc_paa = 150000 + 2000 * np.random.randn(1)[0]
         Batch_time = np.arange(0, T + h, h)
         ctrl_flags.T_sp = 298
         ctrl_flags.pH_sp = 6.5
