@@ -20,7 +20,7 @@ using_Raman = True
 ![Outputs](figures/Figure_1.png)
 
 <p align="center">
-  <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/Figure_2.png" style="width: 50%; height: 50%">
+  <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/Figure_2.png" width="50%">
 </p>
 <p align="center">
   <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/Figure_1.png">
