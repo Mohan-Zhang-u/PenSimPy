@@ -15,7 +15,7 @@ num_of_batches = 1
 plot_res = True
 save_res = True
 using_Raman = True
-* No PRBS and Faults applied
+* No PRBS and Faults are applied by default
 ```
 #### Results
 ##### Inputs
