@@ -307,7 +307,7 @@ def create_batch(h, T):
 
     # Raman Spectra: Wavelength & Intensity
     Wavelength = np.zeros((2200, 1), dtype=float)
-    Intensity = np.zeros((2200, int(T / h)), dtype=float)
+    Intensity = np.zeros((int(T / h), 2200), dtype=float)
     channel = Channel()
     create_channel(channel, **{'name': 'Raman Spectra', 'yUnit': 'a.u', 'tUnit': 'cm^-1',
                                'Wavelength': Wavelength, 'Intensity': Intensity})

@@ -26,8 +26,6 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
     N = int(T / h)
     h_ode = h / 20
     t = np.arange(0, T + h, h)
-    # creates batch structure
-    x = create_batch(h, T)
 
     # User control inputs
     # converts from pH to H+ conc.
@@ -35,9 +33,15 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
 
     # Load Raman Spectra Reference
     reference_Spectra_2200 = np.genfromtxt('./spectra_data/reference_Specra.txt', dtype='str')
+    raman_wavelength = reference_Spectra_2200[0:2200, 0].astype('int').tolist()
+    raman_spectra = reference_Spectra_2200[0:2200, 1].astype('float').tolist()
+
+    # creates batch structure
+    x = create_batch(h, T)
 
     # Load Matlab Model
     Matlab_model = loadmat('./Matlab_model/PAA_PLS_model.mat')['b']
+    model_data = Matlab_model[3, :].tolist()
 
     # main loop
     for k in tqdm(range(1, N + 1)):
@@ -174,11 +178,8 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
             par.extend(u00)
             y_sol = odeint(indpensim_ode_py, x00, t_span, tfirst=True, args=(par,))
 
-        # """
         # Defining minimum value for all variables for numerical stability
-        for i in range(1, 32):
-            if y_sol[-1][i - 1] <= 0:
-                y_sol[-1][i - 1] = 0.001
+        y_sol[-1][0:31] = [0.001 if ele <= 0 else ele for ele in y_sol[-1][0:31]]
 
         # Saving all manipulated variables
         x.Fg.t[k - 1] = t_span[-1]
@@ -304,10 +305,10 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
         # Adding in Raman Spectra
         if k > 10:
             if ctrl_flags.Raman_spec == 1:
-                x = raman_sim(k, x, h, T, reference_Spectra_2200)
+                x = raman_sim(k, x, h, T, raman_spectra)
             elif ctrl_flags.Raman_spec == 2:
-                x = raman_sim(k, x, h, T, reference_Spectra_2200)
-                x = substrate_prediction(k, x, Matlab_model)
+                x = raman_sim(k, x, h, T, raman_spectra)
+                x = substrate_prediction(k, x, model_data)
 
         # Off-line measurements recorded
         if np.remainder(t_span[-1], ctrl_flags.Off_line_m) == 0 or t_span[-1] == 1 or t_span[-1] == T:
@@ -334,10 +335,10 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
             x.X_offline.y[k - 1] = float('nan')
             x.X_offline.t[k - 1] = float('nan')
 
-        # convert to pH from H+ concentration
-    for k in range(0, len(x.pH.y)):
-        if x.pH.y[k] != 0:
-            x.pH.y[k] = -math.log(x.pH.y[k]) / math.log(10)
-        x.Q.y[k] = x.Q.y[k] / 1000
+    # convert to pH from H+ concentration
+    x.pH.y = [-math.log(pH) / math.log(10) if pH != 0 else pH for pH in x.pH.y]
+    x.Q.y = [Q / 1000 for Q in x.Q.y]
+
+    x.Raman_Spec.Wavelength = raman_wavelength
 
     return x

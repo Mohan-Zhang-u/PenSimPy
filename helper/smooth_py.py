@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.signal import lfilter
 
 
 def smooth_py(y, width):
@@ -11,7 +12,6 @@ def smooth_py(y, width):
     n = len(y)
     b1 = np.ones(width) / width
     a1 = [1]
-    from scipy.signal import lfilter
     c = lfilter(b1, a1, y, axis=0)
     cbegin = np.cumsum(y[0:width - 2])
     cbegin = [x / y for x, y in zip(cbegin[::2], list(range(1, width - 1, 2)))]
