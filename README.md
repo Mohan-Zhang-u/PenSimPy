@@ -1,5 +1,5 @@
-# PenSimPy :
-![alt text](https://github.com/Quarticai/PenSimPy/blob/master/figures/logo_light.png "Logo Title Text 1")
+![alt text](figures/logo_light.png "Logo Title Text 1")
+## PenSimPy
 
 Python version of [IndPenSim](http://www.industrialpenicillinsimulation.com/)
 
