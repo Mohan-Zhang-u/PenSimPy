@@ -223,6 +223,5 @@ def indpensim_run(Batch_no, batch_run_flags, Recipe_Fs_sp):
     param_list = parameter_list(x0, alpha_kla, N_conc_paa, PAA_c)
 
     # Run simulation
-    print("=== Run simulation...")
     Xref = indpensim(xinterp, x0, h, T, 2, param_list, ctrl_flags, Recipe_Fs_sp)
     return Xref, h

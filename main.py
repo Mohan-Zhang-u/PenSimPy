@@ -8,7 +8,7 @@ from helper.save_csv import save_csv
 
 
 if __name__ == "__main__":
-    total_runs = 1
+    total_runs = 3
     num_of_batches = 1
     plot_res = True
     save_res = False
@@ -17,7 +17,6 @@ if __name__ == "__main__":
     batch_run_flags = BatchRunFlags(num_of_batches)
 
     if using_Raman:
-        print(f"=== Raman...")
         num_of_batches = 2
         # batch_run_flags.Batch_fault_order_reference = np.array([[0], [1]], dtype=float)
         batch_run_flags.Batch_fault_order_reference = np.array([[0], [0]], dtype=float)
@@ -30,6 +29,7 @@ if __name__ == "__main__":
 
     peni_products = []
 
+    print("=== Run simulation...")
     for run_id in range(total_runs):
         print(f"===== run_id: {run_id}")
         Recipe_Fs_sp_paper = [8,  15, 30,  75, 150,  30,  37,  43,  47,  51,  57,  61,  65,  72,  76,  80,  84,  90, 116,  90,  80]
@@ -57,7 +57,7 @@ if __name__ == "__main__":
         median_T = []
 
         for Batch_no in range(2, num_of_batches + 1):
-            print(f"==== Batch_no: {Batch_no}")
+            # print(f"==== Batch_no: {Batch_no}")
             t = time.time()
             Xref, h = indpensim_run(Batch_no, batch_run_flags, Recipe_Fs_sp)
             print(f"=== cost: {int(time.time() - t)} s")

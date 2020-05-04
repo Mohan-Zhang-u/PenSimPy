@@ -23,4 +23,7 @@ using_Raman = True
 /path/to/PenSimPy/data/0/batch_median_trend.csv
 /path/to/PenSimPy/data/0/batch_statistics.csv
 ```
+#### Benchmark
+##### Time cost with Raman Simulation
+![Image description](figures/benchmark.png)
 
