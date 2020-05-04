@@ -15,9 +15,14 @@ using_Raman = True
 ```
 #### Results
 ##### Figures for inputs
-![Image description](figures/Figure_2.png)
+![Inputs](figures/Figure_2.png)
 ##### Figures for outputs
-![Image description](figures/Figure_1.png)
+![Outputs](figures/Figure_1.png)
+
+<p align="center">
+  <img width="460" height="300" src="https://github.com/Quarticai/PenSimPy/blob/master/figures/Figure_1.png">
+</p>
+
 ##### Csv data paths
 ```
 /path/to/PenSimPy/data/0/batch_median_trend.csv
