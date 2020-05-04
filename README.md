@@ -15,15 +15,13 @@ using_Raman = True
 ```
 #### Results
 ##### Figures for inputs
-![Inputs](figures/Figure_2.png)
-##### Figures for outputs
-![Outputs](figures/Figure_1.png)
-
 <p align="center">
   <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/Figure_2.png" width="50%">
 </p>
+
+##### Figures for outputs
 <p align="center">
-  <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/Figure_1.png">
+  <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/Figure_1.png" width="80%">
 </p>
 
 ##### Csv data paths
