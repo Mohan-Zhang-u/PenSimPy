@@ -33,7 +33,7 @@ using_Raman = True
 /path/to/PenSimPy/data/0/raman.csv
 ```
 #### Benchmark
-##### Time cost with Raman Simulation
+##### Time cost with Raman Simulation (* MacBook Pro (15-inch, 2018); 2.2 GHz 6-Core Intel Core i7; 16 GB 2400 MHz DDR4)
 <p align="center">
   <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/benchmark.png" width="80%">
 </p>
