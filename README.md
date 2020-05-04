@@ -1,5 +1,5 @@
 ![alt text](figures/logo_light.png "Logo Title Text 1")
-# PenSimPy
+# PenSimPy ![](https://img.shields.io/badge/python-3.6.8-orange)
 Python version of [IndPenSim](http://www.industrialpenicillinsimulation.com/). Sequential batch control, Raman spectra simulation, PRBS (pseudo random binary signal),
 Faults (Aeration rate fault, Vessel back pressure fault...) and Substrate prediction are enabled. 
 A fresh web application based on PenSimPy and [Quartic.AI](https://quartic.ai/) can be found [here](http://quartic.ddns.net:8000/).
