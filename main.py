@@ -8,7 +8,7 @@ from helper.save_csv import save_csv
 
 
 if __name__ == "__main__":
-    total_runs = 3
+    total_runs = 1
     num_of_batches = 1
     plot_res = True
     save_res = False
