@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.signal import lfilter
 
+
 def smooth_py(y, width):
     """
     Realize Matlab smooth() func.

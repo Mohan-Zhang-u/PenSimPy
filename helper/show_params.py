@@ -76,7 +76,7 @@ def show_params(Xref):
     plt.xticks([])
     plt.subplot(4, 4, 14)
     plt.title("Raman Spectra")
-    plt.plot(Xref.Raman_Spec.Wavelength, Xref.Raman_Spec.Intensity)
+    plt.plot(Xref.Raman_Spec.Wavelength, Xref.Raman_Spec.Intensity.T)
     plt.xticks([])
 
     # plt.figure()

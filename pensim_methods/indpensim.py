@@ -41,6 +41,7 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
 
     # Load Matlab Model
     Matlab_model = loadmat('./Matlab_model/PAA_PLS_model.mat')['b']
+    model_data = Matlab_model[3, :].tolist()
 
     # main loop
     for k in tqdm(range(1, N + 1)):
@@ -310,7 +311,7 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
                 x = raman_sim(k, x, h, T, raman_spectra)
             elif ctrl_flags.Raman_spec == 2:
                 x = raman_sim(k, x, h, T, raman_spectra)
-                x = substrate_prediction(k, x, Matlab_model)
+                x = substrate_prediction(k, x, model_data)
 
         # Off-line measurements recorded
         if np.remainder(t_span[-1], ctrl_flags.Off_line_m) == 0 or t_span[-1] == 1 or t_span[-1] == T:
@@ -337,11 +338,9 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
             x.X_offline.y[k - 1] = float('nan')
             x.X_offline.t[k - 1] = float('nan')
 
-        # convert to pH from H+ concentration
-    for k in range(0, len(x.pH.y)):
-        if x.pH.y[k] != 0:
-            x.pH.y[k] = -math.log(x.pH.y[k]) / math.log(10)
-        x.Q.y[k] = x.Q.y[k] / 1000
+    # convert to pH from H+ concentration
+    x.pH.y = [-math.log(pH) / math.log(10) if pH != 0 else pH for pH in x.pH.y]
+    x.Q.y = [Q/1000 for Q in x.Q.y]
 
     x.Raman_Spec.Wavelength = raman_wavelength
 

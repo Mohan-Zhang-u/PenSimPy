@@ -10,8 +10,8 @@ def raman_sim(k, x, h, T, raman_spectra):
 
     Intensity_shift1[:, 0] = [math.exp((j + 1) / 1100) - 0.5 for j in range(Wavenumber_max)]
 
-    # todo check here, get rid of a list
-    New_Spectra = np.ones((Wavenumber_max, 1), dtype=int)
+    # # todo check here, get rid of a list
+    # New_Spectra = np.ones((Wavenumber_max, 1), dtype=int)
 
     a = -0.000178143846614472
     b = 1.05644816081515
@@ -24,36 +24,23 @@ def raman_sim(k, x, h, T, raman_spectra):
     Intensity_increase1 = a * Biomass_S + b * Product_S + c * Viscosity_S + d * Time_S
     scaling_factor = 370000
     Gluc_increase = 1714.2857142857142
-
     PAA_increase = 1700
     Prod_increase = 100000
 
     # Loading in the reference Raman Spectral file
     New_Spectra = Intensity_increase1 * scaling_factor * Intensity_shift1 + np.array([raman_spectra]).T
-    x.Raman_Spec.Intensity[:, k - 1] = np.squeeze(New_Spectra).tolist()
+    x.Raman_Spec.Intensity[k - 1, :] = np.squeeze(New_Spectra).tolist()
 
-    random_noise = [-1] * Wavenumber_max
-
-    random_noise_summed = np.ones((Wavenumber_max, 1), dtype=int)
-    New_Spectra_noise = np.ones((Wavenumber_max, 1), dtype=int)
-
-    random_number = np.random.randint(1, 4, size=(Wavenumber_max, 1))
-
-    for i in range(Wavenumber_max):
-        noise_factor = 50
-        if random_number[i][0] == 1:
-            random_noise[i] = 0
-        elif random_number[i][0] == 2:
-            random_noise[i] = noise_factor
-        else:
-            random_noise[i] = -noise_factor
+    random_noise = [50] * Wavenumber_max
+    random_number = np.random.randint(-1, 2, size=(Wavenumber_max, 1))
+    random_noise = np.multiply(random_noise, random_number.T)[0]
 
     random_noise_summed = np.cumsum(random_noise)
     random_noise_summed_smooth = smooth_py(random_noise_summed, 25)
 
     New_Spectra_noise = New_Spectra + 10 * np.array([random_noise_summed_smooth]).T
 
-    x.Raman_Spec.Intensity[:, k - 1] = np.squeeze(New_Spectra_noise).tolist()
+    x.Raman_Spec.Intensity[k - 1, :] = np.squeeze(New_Spectra_noise).tolist()
 
     # Aim 3. Creating the bell curve response for Glucose
     Glucose_raw_peaks_G_peaka = np.zeros((Wavenumber_max, 1), dtype=float)
@@ -148,6 +135,6 @@ def raman_sim(k, x, h, T, raman_spectra):
     term2 = total_peaks_PAA * PAA_increase * PAA_raman
     term3 = total_peaks_P * Prod_increase * x.P.y[k - 1]
 
-    x.Raman_Spec.Intensity[:, k - 1] = np.squeeze(New_Spectra_noise + term1 + term2 + term3).tolist()
+    x.Raman_Spec.Intensity[k - 1, :] = np.squeeze(New_Spectra_noise + term1 + term2 + term3).tolist()
 
     return x
