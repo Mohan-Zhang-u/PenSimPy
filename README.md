@@ -20,7 +20,10 @@ using_Raman = True
 ![Outputs](figures/Figure_1.png)
 
 <p align="center">
-  <img width="460" height="300" src="https://github.com/Quarticai/PenSimPy/blob/master/figures/Figure_1.png">
+  <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/Figure_2.png">
+</p>
+<p align="center">
+  <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/Figure_1.png">
 </p>
 
 ##### Csv data paths
