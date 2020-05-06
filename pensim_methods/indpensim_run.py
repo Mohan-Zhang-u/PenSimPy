@@ -29,12 +29,11 @@ def indpensim_run(Batch_no, batch_run_flags):
         ctrl_flags.Vis = 0
         Optimum_Batch_lenght = 230
         # set a fixed batch length
-        T = Optimum_Batch_lenght
-        # if ctrl_flags.Fixed_Batch_length == 1:
-        #     Batch_length_variation = 25 * np.random.randn(1)[0]
-        #     T = int(round(Optimum_Batch_lenght + Batch_length_variation))
-        # elif ctrl_flags.Fixed_Batch_length == 0:
-        #     T = Optimum_Batch_lenght
+        if ctrl_flags.Fixed_Batch_length == 1:
+            Batch_length_variation = 25 * np.random.randn(1)[0]
+            T = int(round(Optimum_Batch_lenght + Batch_length_variation))
+        elif ctrl_flags.Fixed_Batch_length == 0:
+            T = Optimum_Batch_lenght
 
         # Enbaling seed for repeatable random numbers for different batches
         Random_seed_ref = int(np.ceil(np.random.rand(1)[0] * 1000))
@@ -96,8 +95,8 @@ def indpensim_run(Batch_no, batch_run_flags):
 
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
         Rand_ref = Rand_ref + 1
-        x0.a0 = intial_conds * (1 / 3)
-        x0.a1 = intial_conds * (2 / 3)
+        x0.a0 = intial_conds * 0.3333333333333333
+        x0.a1 = intial_conds * 0.6666666666666666
         x0.a3 = 0
         x0.a4 = 0
         x0.Culture_age = 0
@@ -155,7 +154,7 @@ def indpensim_run(Batch_no, batch_run_flags):
 
     # Substrate inlet concentration disturbance: +/- 15 [g L^{-1}]
     v = np.random.randn(int(T / h + 1), 1)
-    distcs = lfilter(b1, a1, 5 * 300 * v, axis=0)
+    distcs = lfilter(b1, a1, 1500 * v, axis=0)
     channel = Channel()
     create_channel(channel, **{'name': 'Substrate concentration disturbance',
                                'yUnit': 'gL^{-1}',
@@ -223,5 +222,5 @@ def indpensim_run(Batch_no, batch_run_flags):
     param_list = parameter_list(x0, alpha_kla, N_conc_paa, PAA_c)
 
     # Run simulation
-    Xref = indpensim(xinterp, x0, h, T, 2, param_list, ctrl_flags)
+    Xref = indpensim(xinterp, x0, h, T, param_list, ctrl_flags)
     return Xref, h

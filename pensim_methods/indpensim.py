@@ -11,14 +11,13 @@ from scipy.io import loadmat
 from helper.get_recipe_trend import get_recipe_trend
 
 
-def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags):
+def indpensim(xd, x0, h, T, param_list, ctrl_flags):
     """
     Simulate the fermentation process by solving ODE
     :param xd:
     :param x0:
     :param h:
     :param T:
-    :param solv:
     :param param_list:
     :param ctrl_flags:
     :return:
@@ -69,7 +68,8 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags):
     Recipe_pres_sp = [0.6, 0.7, 0.8, 0.9, 1.1, 1, 0.9, 0.9]
     Recipe_pres_trend = get_recipe_trend(Recipe_pres, Recipe_pres_sp)
 
-    Recipe_discharge = [500, 510, 650, 660, 750, 760, 850, 860, 950, 960, 1050, 1060, 1150, 1160, 1250, 1260, 1350, 1360, 1750]
+    Recipe_discharge = [500, 510, 650, 660, 750, 760, 850, 860, 950, 960, 1050, 1060, 1150, 1160, 1250, 1260, 1350,
+                        1360, 1750]
     Recipe_discharge_sp = [0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 0]
     Recipe_discharge_trend = get_recipe_trend(Recipe_discharge, Recipe_discharge_sp)
 
@@ -98,13 +98,13 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags):
 
         # gets MVs
         u, x = fctrl_indpensim(x, xd, k, h, ctrl_flags,
-                               Recipe_Fs_trend[k-1],
-                               Recipe_Foil_trend[k-1],
-                               Recipe_Fg_trend[k-1],
-                               Recipe_pres_trend[k-1],
-                               Recipe_discharge_trend[k-1],
-                               Recipe_water_trend[k-1],
-                               Recipe_PAA_trend[k-1])
+                               Recipe_Fs_trend[k - 1],
+                               Recipe_Foil_trend[k - 1],
+                               Recipe_Fg_trend[k - 1],
+                               Recipe_pres_trend[k - 1],
+                               Recipe_discharge_trend[k - 1],
+                               Recipe_water_trend[k - 1],
+                               Recipe_PAA_trend[k - 1])
 
         # builds initial conditions and control vectors specific to
         # indpensim_ode using ode45
@@ -214,119 +214,120 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags):
                     param_list[1] = x.mu_X_calc.y[k - 2] * 5
 
         # Solver selection and calling indpensim_ode
-        if solv == 2:
-            t_start = t[k - 1]
-            t_end = t[k]
-            t_span = np.arange(t_start, t_end + h_ode, h_ode).tolist()
+        t_start = t[k - 1]
+        t_end = t[k]
+        t_span = np.arange(t_start, t_end + h_ode, h_ode).tolist()
 
-            par = param_list.copy()
-            par.extend(u00)
-            y_sol = odeint(indpensim_ode_py, x00, t_span, tfirst=True, args=(par,))
+        par = param_list.copy()
+        par.extend(u00)
+        y_sol = odeint(indpensim_ode_py, x00, t_span, tfirst=True, args=(par,))
+        y_sol = y_sol[-1]
+        t_tmp = t_span[-1]
 
         # Defining minimum value for all variables for numerical stability
-        y_sol[-1][0:31] = [0.001 if ele <= 0 else ele for ele in y_sol[-1][0:31]]
+        y_sol[0:31] = [0.001 if ele <= 0 else ele for ele in y_sol[0:31]]
 
         # Saving all manipulated variables
-        x.Fg.t[k - 1] = t_span[-1]
+        x.Fg.t[k - 1] = t_tmp
         x.Fg.y[k - 1] = u.Fg
-        x.RPM.t[k - 1] = t_span[-1]
+        x.RPM.t[k - 1] = t_tmp
         x.RPM.y[k - 1] = u.RPM
-        x.Fpaa.t[k - 1] = t_span[-1]
+        x.Fpaa.t[k - 1] = t_tmp
         x.Fpaa.y[k - 1] = u.Fpaa
-        x.Fs.t[k - 1] = t_span[-1]
+        x.Fs.t[k - 1] = t_tmp
         x.Fs.y[k - 1] = u.Fs
-        x.Fa.t[k - 1] = t_span[-1]
+        x.Fa.t[k - 1] = t_tmp
         x.Fa.y[k - 1] = u.Fa
-        x.Fb.t[k - 1] = t_span[-1]
+        x.Fb.t[k - 1] = t_tmp
         x.Fb.y[k - 1] = u.Fb
-        x.Fc.t[k - 1] = t_span[-1]
+        x.Fc.t[k - 1] = t_tmp
         x.Fc.y[k - 1] = u.Fc
-        x.Foil.t[k - 1] = t_span[-1]
+        x.Foil.t[k - 1] = t_tmp
         x.Foil.y[k - 1] = u.Foil
-        x.Fh.t[k - 1] = t_span[-1]
+        x.Fh.t[k - 1] = t_tmp
         x.Fh.y[k - 1] = u.Fh
-        x.Fw.t[k - 1] = t_span[-1]
+        x.Fw.t[k - 1] = t_tmp
         x.Fw.y[k - 1] = u.Fw
-        x.pressure.t[k - 1] = t_span[-1]
+        x.pressure.t[k - 1] = t_tmp
         x.pressure.y[k - 1] = u.pressure
-        x.Fremoved.t[k - 1] = t_span[-1]
+        x.Fremoved.t[k - 1] = t_tmp
         x.Fremoved.y[k - 1] = u.Fremoved
 
         # Saving all the  IndPenSim states
-        x.S.y[k - 1] = y_sol[-1][0]
-        x.S.t[k - 1] = t_span[-1]
-        x.DO2.y[k - 1] = y_sol[-1][1]
+        x.S.y[k - 1] = y_sol[0]
+        x.S.t[k - 1] = t_tmp
+        x.DO2.y[k - 1] = y_sol[1]
 
         # Required for numerical stability
         x.DO2.y[k - 1] = 1 if x.DO2.y[k - 1] < 2 else x.DO2.y[k - 1]
 
-        x.DO2.t[k - 1] = t_span[-1]
-        x.O2.y[k - 1] = y_sol[-1][2]
-        x.O2.t[k - 1] = t_span[-1]
-        x.P.y[k - 1] = y_sol[-1][3]
-        x.P.t[k - 1] = t_span[-1]
-        x.V.y[k - 1] = y_sol[-1][4]
-        x.V.t[k - 1] = t_span[-1]
-        x.Wt.y[k - 1] = y_sol[-1][5]
-        x.Wt.t[k - 1] = t_span[-1]
-        x.pH.y[k - 1] = y_sol[-1][6]
-        x.pH.t[k - 1] = t_span[-1]
-        x.T.y[k - 1] = y_sol[-1][7]
-        x.T.t[k - 1] = t_span[-1]
-        x.Q.y[k - 1] = y_sol[-1][8]
-        x.Q.t[k - 1] = t_span[-1]
-        x.Viscosity.y[k - 1] = y_sol[-1][9]
-        x.Viscosity.t[k - 1] = t_span[-1]
-        x.Culture_age.y[k - 1] = y_sol[-1][10]
-        x.Culture_age.t[k - 1] = t_span[-1]
-        x.a0.y[k - 1] = y_sol[-1][11]
-        x.a0.t[k - 1] = t_span[-1]
-        x.a1.y[k - 1] = y_sol[-1][12]
-        x.a1.t[k - 1] = t_span[-1]
-        x.a3.y[k - 1] = y_sol[-1][13]
-        x.a3.t[k - 1] = t_span[-1]
-        x.a4.y[k - 1] = y_sol[-1][14]
-        x.a4.t[k - 1] = t_span[-1]
-        x.n0.y[k - 1] = y_sol[-1][15]
-        x.n0.t[k - 1] = t_span[-1]
-        x.n1.y[k - 1] = y_sol[-1][16]
-        x.n1.t[k - 1] = t_span[-1]
-        x.n2.y[k - 1] = y_sol[-1][17]
-        x.n2.t[k - 1] = t_span[-1]
-        x.n3.y[k - 1] = y_sol[-1][18]
-        x.n3.t[k - 1] = t_span[-1]
-        x.n4.y[k - 1] = y_sol[-1][19]
-        x.n4.t[k - 1] = t_span[-1]
-        x.n5.y[k - 1] = y_sol[-1][20]
-        x.n5.t[k - 1] = t_span[-1]
-        x.n6.y[k - 1] = y_sol[-1][21]
-        x.n6.t[k - 1] = t_span[-1]
-        x.n7.y[k - 1] = y_sol[-1][22]
-        x.n7.t[k - 1] = t_span[-1]
-        x.n8.y[k - 1] = y_sol[-1][23]
-        x.n8.t[k - 1] = t_span[-1]
-        x.n9.y[k - 1] = y_sol[-1][24]
-        x.n9.t[k - 1] = t_span[-1]
-        x.nm.y[k - 1] = y_sol[-1][25]
-        x.nm.t[k - 1] = t_span[-1]
-        x.phi0.y[k - 1] = y_sol[-1][26]
-        x.phi0.t[k - 1] = t_span[-1]
-        x.CO2outgas.y[k - 1] = y_sol[-1][27]
-        x.CO2outgas.t[k - 1] = t_span[-1]
-        x.CO2_d.t[k - 1] = t_span[-1]
-        x.CO2_d.y[k - 1] = y_sol[-1][28]
-        x.PAA.y[k - 1] = y_sol[-1][29]
-        x.PAA.t[k - 1] = t_span[-1]
-        x.NH3.y[k - 1] = y_sol[-1][30]
-        x.NH3.t[k - 1] = t_span[-1]
-        x.mu_P_calc.y[k - 1] = y_sol[-1][31]
-        x.mu_P_calc.t[k - 1] = t_span[-1]
-        x.mu_X_calc.y[k - 1] = y_sol[-1][32]
-        x.mu_X_calc.t[k - 1] = t_span[-1]
+        x.DO2.t[k - 1] = t_tmp
+        x.O2.y[k - 1] = y_sol[2]
+        x.O2.t[k - 1] = t_tmp
+        x.P.y[k - 1] = y_sol[3]
+        x.P.t[k - 1] = t_tmp
+        x.V.y[k - 1] = y_sol[4]
+        x.V.t[k - 1] = t_tmp
+        x.Wt.y[k - 1] = y_sol[5]
+        x.Wt.t[k - 1] = t_tmp
+        x.pH.y[k - 1] = y_sol[6]
+        x.pH.t[k - 1] = t_tmp
+        x.T.y[k - 1] = y_sol[7]
+        x.T.t[k - 1] = t_tmp
+        x.Q.y[k - 1] = y_sol[8]
+        x.Q.t[k - 1] = t_tmp
+        x.Viscosity.y[k - 1] = y_sol[9]
+        x.Viscosity.t[k - 1] = t_tmp
+        x.Culture_age.y[k - 1] = y_sol[10]
+        x.Culture_age.t[k - 1] = t_tmp
+        x.a0.y[k - 1] = y_sol[11]
+        x.a0.t[k - 1] = t_tmp
+        x.a1.y[k - 1] = y_sol[12]
+        x.a1.t[k - 1] = t_tmp
+        x.a3.y[k - 1] = y_sol[13]
+        x.a3.t[k - 1] = t_tmp
+        x.a4.y[k - 1] = y_sol[14]
+        x.a4.t[k - 1] = t_tmp
+        x.n0.y[k - 1] = y_sol[15]
+        x.n0.t[k - 1] = t_tmp
+        x.n1.y[k - 1] = y_sol[16]
+        x.n1.t[k - 1] = t_tmp
+        x.n2.y[k - 1] = y_sol[17]
+        x.n2.t[k - 1] = t_tmp
+        x.n3.y[k - 1] = y_sol[18]
+        x.n3.t[k - 1] = t_tmp
+        x.n4.y[k - 1] = y_sol[19]
+        x.n4.t[k - 1] = t_tmp
+        x.n5.y[k - 1] = y_sol[20]
+        x.n5.t[k - 1] = t_tmp
+        x.n6.y[k - 1] = y_sol[21]
+        x.n6.t[k - 1] = t_tmp
+        x.n7.y[k - 1] = y_sol[22]
+        x.n7.t[k - 1] = t_tmp
+        x.n8.y[k - 1] = y_sol[23]
+        x.n8.t[k - 1] = t_tmp
+        x.n9.y[k - 1] = y_sol[24]
+        x.n9.t[k - 1] = t_tmp
+        x.nm.y[k - 1] = y_sol[25]
+        x.nm.t[k - 1] = t_tmp
+        x.phi0.y[k - 1] = y_sol[26]
+        x.phi0.t[k - 1] = t_tmp
+        x.CO2outgas.y[k - 1] = y_sol[27]
+        x.CO2outgas.t[k - 1] = t_tmp
+        x.CO2_d.t[k - 1] = t_tmp
+        x.CO2_d.y[k - 1] = y_sol[28]
+        x.PAA.y[k - 1] = y_sol[29]
+        x.PAA.t[k - 1] = t_tmp
+        x.NH3.y[k - 1] = y_sol[30]
+        x.NH3.t[k - 1] = t_tmp
+        x.mu_P_calc.y[k - 1] = y_sol[31]
+        x.mu_P_calc.t[k - 1] = t_tmp
+        x.mu_X_calc.y[k - 1] = y_sol[32]
+        x.mu_X_calc.t[k - 1] = t_tmp
         x.X.y[k - 1] = x.a0.y[k - 1] + x.a1.y[k - 1] + x.a3.y[k - 1] + x.a4.y[k - 1]
-        x.X.t[k - 1] = t_span[-1]
+        x.X.t[k - 1] = t_tmp
         x.Fault_ref.y[k - 1] = u.Fault_ref
-        x.Fault_ref.t[k - 1] = t_span[-1]
+        x.Fault_ref.t[k - 1] = t_tmp
         x.Control_ref.y[k - 1] = ctrl_flags.PRBS
         x.Control_ref.t[k - 1] = ctrl_flags.Batch_Num
         x.PAT_ref.y[k - 1] = ctrl_flags.Raman_spec
@@ -338,14 +339,14 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags):
         O2_in = 0.204
 
         # Calculating the OUR/ CER
-        x.OUR.y[k - 1] = (32 * x.Fg.y[k - 1] / 22.4) * \
+        x.OUR.y[k - 1] = (1.4285714285714286 * x.Fg.y[k - 1]) * \
                          (O2_in - x.O2.y[k - 1] * (0.7902 / (1 - x.O2.y[k - 1] - x.CO2outgas.y[k - 1] / 100)))
-        x.OUR.t[k - 1] = t_span[-1]
+        x.OUR.t[k - 1] = t_tmp
 
         # Calculating the CER
-        x.CER.y[k - 1] = (44 * x.Fg.y[k - 1] / 22.4) * ((0.65 * x.CO2outgas.y[k - 1] / 100) *
-                                                        (0.7902 / (1 - O2_in - x.CO2outgas.y[k - 1] / 100) - 0.0330))
-        x.CER.t[k - 1] = t_span[-1]
+        x.CER.y[k - 1] = (1.9642857142857144 * x.Fg.y[k - 1]) * (
+                    (0.0065 * x.CO2outgas.y[k - 1]) * (0.7902 / (1 - O2_in - x.CO2outgas.y[k - 1] / 100) - 0.0330))
+        x.CER.t[k - 1] = t_tmp
 
         # Adding in Raman Spectra
         if k > 10:
@@ -356,7 +357,7 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags):
                 x = substrate_prediction(k, x, model_data)
 
         # Off-line measurements recorded
-        if np.remainder(t_span[-1], ctrl_flags.Off_line_m) == 0 or t_span[-1] == 1 or t_span[-1] == T:
+        if np.remainder(t_tmp, ctrl_flags.Off_line_m) == 0 or t_tmp == 1 or t_tmp == T:
             delay = ctrl_flags.Off_line_delay
             x.NH3_offline.y[k - 1] = x.NH3.y[k - delay - 1]
             x.NH3_offline.t[k - 1] = x.NH3.t[k - delay - 1]
