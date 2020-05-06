@@ -6,7 +6,6 @@ import statistics
 from helper.show_params import show_params
 from helper.save_csv import save_csv
 
-
 if __name__ == "__main__":
     total_runs = 1
     num_of_batches = 1
@@ -18,12 +17,8 @@ if __name__ == "__main__":
 
     if using_Raman:
         num_of_batches = 2
-        # batch_run_flags.Batch_fault_order_reference = np.array([[0], [1]], dtype=float)
         batch_run_flags.Batch_fault_order_reference = np.array([[0], [0]], dtype=float)
-
-        # batch_run_flags.Control_strategy = np.array([[0, 1]], dtype=float)
         batch_run_flags.Control_strategy = np.array([[0, 0]], dtype=float)
-
         batch_run_flags.Batch_length = np.array([[1, 0]], dtype=float)
         batch_run_flags.Raman_spec = np.array([[1, 2]], dtype=float)
 
@@ -32,21 +27,6 @@ if __name__ == "__main__":
     print("=== Run simulation...")
     for run_id in range(total_runs):
         print(f"===== run_id: {run_id}")
-        Recipe_Fs_sp_paper = [8,  15, 30,  75, 150,  30,  37,  43,  47,  51,  57,  61,  65,  72,  76,  80,  84,  90, 116,  90,  80]
-        Recipe_Fs_sp = Recipe_Fs_sp_paper
-        # if run_id == 0:
-        #     Recipe_Fs_sp = Recipe_Fs_sp_paper
-        # elif run_id == 1:
-        #     Recipe_Fs_sp = [8, 15, 30, 75, 150, 30, 37, 43, 47, 55, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 80]
-        # elif run_id == 2:
-        #     Recipe_Fs_sp = [8, 15, 30, 75, 150, 30, 37, 43, 47, 44, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 80]
-        # elif 3 <= run_id < 6:
-        #     Recipe_Fs_sp = [ele + np.random.randint(-1, 1) for ele in Recipe_Fs_sp_paper]
-        # else:
-        #     Recipe_Fs_sp = [ele + np.random.randint(-5, 5) for ele in Recipe_Fs_sp_paper]
-
-        # print(f"=== Recipe_Fs_sp: {Recipe_Fs_sp}")
-
         # For backend APIs
         penicillin_yields = []
         avg_pHs = []
@@ -57,9 +37,9 @@ if __name__ == "__main__":
         median_T = []
 
         for Batch_no in range(2, num_of_batches + 1):
-            # print(f"==== Batch_no: {Batch_no}")
+            print(f"==== Batch_no: {Batch_no}")
             t = time.time()
-            Xref, h = indpensim_run(Batch_no, batch_run_flags, Recipe_Fs_sp)
+            Xref, h = indpensim_run(Batch_no, batch_run_flags)
             print(f"=== cost: {int(time.time() - t)} s")
 
             penicillin_harvested_during_batch = sum([a * b for a, b in zip(Xref.Fremoved.y, Xref.P.y)]) * h

@@ -22,8 +22,8 @@ def create_channel(channel, **kwargs):
         if kwargs.get('value') is not None:
             channel.y = kwargs['value'].T.tolist()[0]
 
-        if kwargs.get('Wavelength') is not None:
-            channel.Wavelength = kwargs['Wavelength'].T.tolist()[0]
+        if kwargs.get('Wavenumber') is not None:
+            channel.Wavenumber = kwargs['Wavenumber'].T.tolist()[0]
 
         if kwargs.get('Intensity') is not None:
             channel.Intensity = kwargs['Intensity']

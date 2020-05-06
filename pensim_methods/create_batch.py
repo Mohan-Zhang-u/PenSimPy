@@ -305,12 +305,12 @@ def create_batch(h, T):
                    **{'name': 'PAA Prediction.', 'yUnit': 'PAA_pred (g L^{-1})', 'tUnit': 'h', 'time': t, 'value': y})
     x.PAA_pred = channel
 
-    # Raman Spectra: Wavelength & Intensity
-    Wavelength = np.zeros((2200, 1), dtype=float)
+    # Raman Spectra: Wavenumber & Intensity
+    Wavenumber = np.zeros((2200, 1), dtype=float)
     Intensity = np.zeros((int(T / h), 2200), dtype=float)
     channel = Channel()
     create_channel(channel, **{'name': 'Raman Spectra', 'yUnit': 'a.u', 'tUnit': 'cm^-1',
-                               'Wavelength': Wavelength, 'Intensity': Intensity})
+                               'Wavenumber': Wavenumber, 'Intensity': Intensity})
     x.Raman_Spec = channel
 
     return x

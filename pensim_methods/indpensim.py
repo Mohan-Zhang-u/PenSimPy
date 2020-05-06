@@ -11,7 +11,7 @@ from scipy.io import loadmat
 from helper.get_recipe_trend import get_recipe_trend
 
 
-def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
+def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags):
     """
     Simulate the fermentation process by solving ODE
     :param xd:
@@ -34,7 +34,7 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
 
     # Load Raman Spectra Reference
     reference_Spectra_2200 = np.genfromtxt('./spectra_data/reference_Specra.txt', dtype='str')
-    raman_wavelength = reference_Spectra_2200[0:2200, 0].astype('int').tolist()
+    raman_wavenumber = reference_Spectra_2200[0:2200, 0].astype('int').tolist()
     raman_spectra = reference_Spectra_2200[0:2200, 1].astype('float').tolist()
 
     # creates batch structure
@@ -97,7 +97,7 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
             x.T.y[0] = x0.T
 
         # gets MVs
-        u, x = fctrl_indpensim(x, xd, k, h, T, ctrl_flags,
+        u, x = fctrl_indpensim(x, xd, k, h, ctrl_flags,
                                Recipe_Fs_trend[k-1],
                                Recipe_Foil_trend[k-1],
                                Recipe_Fg_trend[k-1],
@@ -384,6 +384,6 @@ def indpensim(xd, x0, h, T, solv, param_list, ctrl_flags, Recipe_Fs_sp):
     x.pH.y = [-math.log(pH) / math.log(10) if pH != 0 else pH for pH in x.pH.y]
     x.Q.y = [Q / 1000 for Q in x.Q.y]
 
-    x.Raman_Spec.Wavelength = raman_wavelength
+    x.Raman_Spec.Wavenumber = raman_wavenumber
 
     return x

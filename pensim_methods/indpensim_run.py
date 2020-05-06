@@ -9,7 +9,7 @@ from pensim_classes.Xinterp import Xinterp
 from pensim_methods.indpensim import indpensim
 
 
-def indpensim_run(Batch_no, batch_run_flags, Recipe_Fs_sp):
+def indpensim_run(Batch_no, batch_run_flags):
     """
     Initialize the params and call the simulator
     :param Batch_no:
@@ -223,5 +223,5 @@ def indpensim_run(Batch_no, batch_run_flags, Recipe_Fs_sp):
     param_list = parameter_list(x0, alpha_kla, N_conc_paa, PAA_c)
 
     # Run simulation
-    Xref = indpensim(xinterp, x0, h, T, 2, param_list, ctrl_flags, Recipe_Fs_sp)
+    Xref = indpensim(xinterp, x0, h, T, 2, param_list, ctrl_flags)
     return Xref, h

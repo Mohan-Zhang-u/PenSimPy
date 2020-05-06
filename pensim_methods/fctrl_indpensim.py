@@ -5,14 +5,13 @@ from scipy.interpolate import interp1d
 from pensim_classes.U import U
 
 
-def fctrl_indpensim(x, xd, k, h, T, ctrl_flags, Fs_k, Foil_k, Fg_k, pres_k, discharge_k, water_k, PAA_k):
+def fctrl_indpensim(x, xd, k, h, ctrl_flags, Fs_k, Foil_k, Fg_k, pres_k, discharge_k, water_k, PAA_k):
     """
     Control strategies: Sequential batch control and PID control
     :param x:
     :param xd:
     :param k:
     :param h:
-    :param T:
     :param ctrl_flags:
     :return:
     """
@@ -282,10 +281,9 @@ def fctrl_indpensim(x, xd, k, h, T, ctrl_flags, Fs_k, Foil_k, Fg_k, pres_k, disc
                 temp2 = x.PAA_pred.y[k - 5]
 
             if k == 1:
-                Fpaa = PIDSimple3(x.Fpaa.y[0], PAA_err, PAA_err1, temp, temp1, temp2, 0, 150, 0.1, 0.50, 0 * 0.002, h)
+                Fpaa = PIDSimple3(x.Fpaa.y[0], PAA_err, PAA_err1, temp, temp1, temp2, 0, 150, 0.1, 0.50, 0, h)
             else:
-                Fpaa = PIDSimple3(x.Fpaa.y[k - 2], PAA_err, PAA_err1, temp, temp1, temp2,
-                                  0, 150, 0.1, 0.50, 0 * 0.002, h)
+                Fpaa = PIDSimple3(x.Fpaa.y[k - 2], PAA_err, PAA_err1, temp, temp1, temp2, 0, 150, 0.1, 0.50, 0, h)
 
     # Controller vector
     u.Fg = Fg

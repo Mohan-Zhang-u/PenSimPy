@@ -28,8 +28,8 @@ def save_csv(run_id, avg_pHs, avg_Ts, penicillin_yields, median_pH, median_T, Xr
     file_path = os.path.join(output_dir, 'batch_median_trend.csv')
     df.to_csv(file_path, sep=',', index=False)
 
-    wavelength = Xref.Raman_Spec.Wavelength
-    df = pd.DataFrame(Xref.Raman_Spec.Intensity, columns=wavelength)
+    wavenumber = Xref.Raman_Spec.Wavenumber
+    df = pd.DataFrame(Xref.Raman_Spec.Intensity, columns=wavenumber)
     df = df[df.columns[::-1]]
     df['peni_concentraion'] = Xref.P.y
     file_path = os.path.join(output_dir, 'raman.csv')
