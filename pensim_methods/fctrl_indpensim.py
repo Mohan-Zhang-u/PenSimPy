@@ -5,7 +5,7 @@ from scipy.interpolate import interp1d
 from pensim_classes.U import U
 
 
-def fctrl_indpensim(x, xd, k, h, T, ctrl_flags, Recipe_Fs_sp):
+def fctrl_indpensim(x, xd, k, h, T, ctrl_flags, Fs_k, Foil_k, Fg_k, pres_k, discharge_k, water_k, PAA_k):
     """
     Control strategies: Sequential batch control and PID control
     :param x:
@@ -152,23 +152,8 @@ def fctrl_indpensim(x, xd, k, h, T, ctrl_flags, Recipe_Fs_sp):
     # SBC - Fs
     if ctrl_flags.SBC == 0:
         viscosity = 4
-        Recipe_Fs = [15, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400, 800, 1750]
-        Recipe_Fs_sp = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 80]
+        Fs = Fs_k
 
-        # # green
-        # Recipe_Fs = [15, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400, 500, 800, 1750]
-        # Recipe_Fs_sp = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 0, 0]
-
-        # # pink
-        # Recipe_Fs = [15, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400, 500, 550, 600, 650, 700, 800, 1750]
-        # Recipe_Fs_sp = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 100, 110, 120, 110, 250, 250]
-
-        for SQ in range(1, len(Recipe_Fs) + 1):
-            if k <= Recipe_Fs[SQ - 1]:
-                Fs = Recipe_Fs_sp[SQ - 1]
-                break
-            else:
-                Fs = Recipe_Fs_sp[-1]
         if ctrl_flags.PRBS == 1:
             if k > 500 and np.remainder(k, 100) == 0:
                 random_number = np.random.randint(1, 4)
@@ -186,66 +171,12 @@ def fctrl_indpensim(x, xd, k, h, T, ctrl_flags, Recipe_Fs_sp):
         else:
             x.PRBS_noise_addition[k - 1] = 0
 
-        # SBC - Foil
-        Recipe_Foil = [20, 80, 280, 300, 320, 340, 360, 380, 400, 1750]
-        Recipe_Foil_sp = [22, 30, 35, 34, 33, 32, 31, 30, 29, 23]
-        for SQ in range(1, len(Recipe_Foil) + 1):
-            if k <= Recipe_Foil[SQ - 1]:
-                Foil = Recipe_Foil_sp[SQ - 1]
-                break
-            else:
-                Foil = Recipe_Foil_sp[-1]
-
-        # SBC - Fg
-        Recipe_Fg = [40, 100, 200, 450, 1000, 1250, 1750]
-        Recipe_Fg_sp = [30, 42, 55, 60, 75, 65, 60]
-        for SQ in range(1, len(Recipe_Fg) + 1):
-            if k <= Recipe_Fg[SQ - 1]:
-                Fg = Recipe_Fg_sp[SQ - 1]
-                break
-            else:
-                Fg = Recipe_Fg_sp[-1]
-
-        # SBC - pressure
-        Recipe_pres = [62.5, 125, 150, 200, 500, 750, 1000, 1750]
-        Recipe_pres_sp = [0.6, 0.7, 0.8, 0.9, 1.1, 1, 0.9, 0.9]
-        for SQ in range(1, len(Recipe_pres) + 1):
-            if k <= Recipe_pres[SQ - 1]:
-                pressure = Recipe_pres_sp[SQ - 1]
-                break
-            else:
-                pressure = Recipe_pres_sp[-1]
-
-        # SBC - F_discharge
-        Recipe_discharge = [500, 510, 650, 660, 750, 760, 850, 860, 950, 960, 1050,
-                            1060, 1150, 1160, 1250, 1260, 1350, 1360, 1750]
-        Recipe_discharge_sp = [0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 0]
-        for SQ in range(1, len(Recipe_discharge) + 1):
-            if k <= Recipe_discharge[SQ - 1]:
-                F_discharge = -Recipe_discharge_sp[SQ - 1]
-                break
-            else:
-                F_discharge = Recipe_discharge_sp[-1]
-
-        # SBC - Fw
-        Recipe_water = [250, 375, 750, 800, 850, 1000, 1250, 1350, 1750]
-        Recipe_water_sp = [0, 500, 100, 0, 400, 150, 250, 0, 100]
-        for SQ in range(1, len(Recipe_water) + 1):
-            if k <= Recipe_water[SQ - 1]:
-                Fw = Recipe_water_sp[SQ - 1]
-                break
-            else:
-                Fw = Recipe_water_sp[-1]
-
-        # SBC - F_PAA
-        Recipe_PAA = [25, 200, 1000, 1500, 1750]
-        Recipe_PAA_sp = [5, 0, 10, 4, 0]
-        for SQ in range(1, len(Recipe_PAA) + 1):
-            if k <= Recipe_PAA[SQ - 1]:
-                Fpaa = Recipe_PAA_sp[SQ - 1]
-                break
-            else:
-                Fpaa = Recipe_PAA_sp[-1]
+        Foil = Foil_k
+        Fg = Fg_k
+        pressure = pres_k
+        F_discharge = -discharge_k
+        Fw = water_k
+        Fpaa = PAA_k
 
         # Add PRBS to substrate flow rate  (Fpaa)
         if ctrl_flags.PRBS == 1:
