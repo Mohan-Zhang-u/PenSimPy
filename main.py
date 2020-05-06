@@ -5,28 +5,26 @@ from pensim_methods.indpensim_run import indpensim_run
 import statistics
 from helper.show_params import show_params
 from helper.save_csv import save_csv
+import argparse
 
 if __name__ == "__main__":
-    total_runs = 1
-    num_of_batches = 1
-    plot_res = True
-    save_res = False
-    using_Raman = True
+    p = argparse.ArgumentParser()
+    p.add_argument('--total_runs', type=int)
+    p.add_argument('--num_of_batches', type=int)
+    p.add_argument('--plot_res', type=bool)
+    p.add_argument('--save_res', type=bool)
+    args = p.parse_args()
+
+    total_runs = args.total_runs
+    num_of_batches = args.num_of_batches
+    plot_res = args.plot_res
+    save_res = args.save_res
 
     batch_run_flags = BatchRunFlags(num_of_batches)
-
-    if using_Raman:
-        num_of_batches = 2
-        batch_run_flags.Batch_fault_order_reference = np.array([[0], [0]], dtype=float)
-        batch_run_flags.Control_strategy = np.array([[0, 0]], dtype=float)
-        batch_run_flags.Batch_length = np.array([[1, 0]], dtype=float)
-        batch_run_flags.Raman_spec = np.array([[1, 2]], dtype=float)
-
     peni_products = []
-
     print("=== Run simulation...")
     for run_id in range(total_runs):
-        print(f"===== run_id: {run_id}")
+        print(f"=== run_id: {run_id}")
         # For backend APIs
         penicillin_yields = []
         avg_pHs = []
@@ -36,7 +34,7 @@ if __name__ == "__main__":
         median_pH = []
         median_T = []
 
-        for Batch_no in range(2, num_of_batches + 1):
+        for Batch_no in range(1, num_of_batches + 1):
             print(f"==== Batch_no: {Batch_no}")
             t = time.time()
             Xref, h = indpensim_run(Batch_no, batch_run_flags)
@@ -53,19 +51,14 @@ if __name__ == "__main__":
             avg_Ts.append(avg_T)
 
             pHs.append(Xref.pH.y)
-
             Ts.append(Xref.T.y)
-
             print(f"=== penicillin_yield_total: {penicillin_yield_total / 1000}")
 
         pHs = np.array(pHs)
         median_pH = [statistics.median(pHs[:, i]) for i in range(0, len(pHs[0]))]
-
         Ts = np.array(Ts)
         median_T = [statistics.median(Ts[:, i]) for i in range(0, len(Ts[0]))]
-
         peni_products.append(penicillin_yields)
-
         # Save data
         if save_res:
             save_csv(run_id, avg_pHs, avg_Ts, penicillin_yields, median_pH, median_T, Xref)

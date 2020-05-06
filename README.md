@@ -7,15 +7,11 @@ A fresh web application based on PenSimPy and [Quartic.AI](https://quartic.ai/) 
 #### How to execute
 ```
 pip install -r requirements.txt
-python main.py
+python main.py --total_runs 1 --num_of_batches 1 --plot_res True --save_res True
 ```
 #### Setup in main.py
 ```
-total_runs = 1
-num_of_batches = 1
-plot_res = True
-save_res = True
-using_Raman = True
+* Using Raman Spectra by default
 * No PRBS and Faults are applied by default
 ```
 #### Results
