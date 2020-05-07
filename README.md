@@ -34,6 +34,6 @@ python main.py --total_runs 1 --num_of_batches 1 --plot_res 1 --save_res 1
 #### Benchmark
 ##### Time cost with Raman Simulation (* MacBook Pro (15-inch, 2018); 2.2 GHz 6-Core Intel Core i7; 16 GB 2400 MHz DDR4)
 <p align="center">
-  <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/benchmark.png" width="80%">
+  <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/benchmark.png" width="88%">
 </p>
 
