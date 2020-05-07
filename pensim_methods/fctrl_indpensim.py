@@ -25,7 +25,7 @@ def fctrl_indpensim(x, xd, k, h, ctrl_flags, Fs_k, Foil_k, Fg_k, pres_k, dischar
                          [800, pH_sensor_error],
                          [1750, pH_sensor_error]]
         Ramp_function = np.array(Ramp_function)
-        tInterp = [x for x in range(1, 1751)]
+        tInterp = np.arange(1, 1751)
         f = interp1d(Ramp_function[:, 0], Ramp_function[:, 1], kind='linear', fill_value='extrapolate')
         Ramp_function_interp = f(tInterp)
         pH_sensor_error = Ramp_function_interp[k - 1]
@@ -85,7 +85,7 @@ def fctrl_indpensim(x, xd, k, h, ctrl_flags, Fs_k, Foil_k, Fg_k, pres_k, dischar
                          [800, T_sensor_error],
                          [1750, T_sensor_error]]
         Ramp_function = np.array(Ramp_function)
-        tInterp = [x for x in range(1, 1751)]
+        tInterp = np.arange(1, 1751)
         f = interp1d(Ramp_function[:, 0], Ramp_function[:, 1], kind='linear', fill_value='extrapolate')
         Ramp_function_interp = f(tInterp)
         T_sensor_error = Ramp_function_interp[k - 1]

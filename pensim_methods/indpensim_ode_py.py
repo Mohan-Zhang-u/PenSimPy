@@ -150,14 +150,14 @@ def indpensim_ode_py(t, y, par):
     pho_b = (1100 + y[3] + y[11] + y[12] + y[13] + y[14])
 
     if dist_flag == 1:
-        mu_p = mu_p + distMuP
-        mux_max = mux_max + distMuX
+        mu_p += distMuP
+        mux_max += distMuX
         c_s = c_s + distsc
-        c_oil = c_oil + distcoil
-        abc = abc + distabc
-        PAA_c = PAA_c + distPAA
-        Tcin = Tcin + distTcin
-        O_2_in = O_2_in + distO_2_in
+        c_oil += distcoil
+        abc += distabc
+        PAA_c += distPAA
+        Tcin += distTcin
+        O_2_in += distO_2_in
 
     # Process parameters
     # Adding in age-dependant term
@@ -177,8 +177,7 @@ def indpensim_ode_py(t, y, par):
     # Calculating log mean pressure of vessel
     pressure_bottom = 1 + pressure + pho_b * h_b * 9.81e-5
     pressure_top = 1 + pressure
-    log_mean_pressure = (pressure_bottom - pressure_top) / (math.log(pressure_bottom / pressure_top))
-    total_pressure = log_mean_pressure
+    total_pressure = (pressure_bottom - pressure_top) / (math.log(pressure_bottom / pressure_top))
 
     # Ensuring minimum value for viscosity
     viscosity = 1 if viscosity < 4 else viscosity
@@ -206,8 +205,7 @@ def indpensim_ode_py(t, y, par):
         PAA_inhib_X = 1
         PAA_inhib_P = 1
         pH = -math.log10(y[6])
-        k4 = math.exp((B_1 + B_2 * pH + B_3 * y[7] + B_4 * (pH ** 2)) + B_5 * (y[7] ** 2))
-        mu_h = k4
+        mu_h = math.exp((B_1 + B_2 * pH + B_3 * y[7] + B_4 * (pH ** 2)) + B_5 * (y[7] ** 2))
 
     if inhib_flag == 2:
         pH_inhib = 1 / (1 + (y[6] / K1) + (K2 / y[6]))
@@ -219,8 +217,7 @@ def indpensim_ode_py(t, y, par):
         PAA_inhib_X = 0.5 * (1 + (math.tanh((X_crit_PAA - y[29]))))
         PAA_inhib_P = 0.5 * (1 + (math.tanh((-P_crit_PAA + y[29]))))
         pH = -math.log10(y[6])
-        k4 = math.exp((B_1 + B_2 * pH + B_3 * y[7] + B_4 * (pH ** 2)) + B_5 * (y[7] ** 2))
-        mu_h = k4
+        mu_h = math.exp((B_1 + B_2 * pH + B_3 * y[7] + B_4 * (pH ** 2)) + B_5 * (y[7] ** 2))
 
     # Main rate equations for kinetic expressions
     # Penicillin inhibition curve
@@ -255,7 +252,7 @@ def indpensim_ode_py(t, y, par):
     phi[0] = y[26]
 
     for k in range(2, 11):
-        phi[k - 1] = ((12.566370614359172 * (1.5e-4 + (k - 2) * delta_r) ** 3) / 3) * y[n] * delta_r
+        phi[k - 1] = 4.1887902047863905 * (1.5e-4 + (k - 2) * delta_r) ** 3 * y[n] * delta_r
         n += 1
 
     # Total vacuole volume
@@ -298,10 +295,8 @@ def indpensim_ode_py(t, y, par):
     n_k = dn9_dt
 
     # Mean vacoule density for  department k all vacuoles above k in size are assumed constant size
-    k = 10
-    r_k = r_0 + (k - 2) * delta_r
-    k = 12
-    r_m = (r_0 + (k - 2) * delta_r)
+    r_k = r_0 + 8 * delta_r
+    r_m = (r_0 + 10 * delta_r)
 
     # Calculating maximum vacuole volume department
     dn_m_dt = k_v * n_k / (r_m - r_k) - mu_a * y[25]
@@ -379,10 +374,10 @@ def indpensim_ode_py(t, y, par):
     P_air = ((V_s * R * T * V_m / (22.4 * h_b)) * math.log(1 + pho_b * 9.81 * h_b / (pressure_top * 1e5)))
     P_t1 = (variable_power + P_air)
     viscosity = 1 if viscosity <= 4 else viscosity
-    vis_scaled = (viscosity / 100)
-    oil_f = (Foil / V)
-    kla = (alpha_kla * ((V_s ** a) * ((P_t1 / V_m) ** b) * vis_scaled ** c) * (1 - oil_f ** d))
-    OUR = (-X_1) * Y_O2_X - m_O2_X * X_t - dP_dt * Y_O2_P
+    vis_scaled = viscosity / 100
+    oil_f = Foil / V
+    kla = alpha_kla * ((V_s ** a) * ((P_t1 / V_m) ** b) * vis_scaled ** c) * (1 - oil_f ** d)
+    OUR = -X_1 * Y_O2_X - m_O2_X * X_t - dP_dt * Y_O2_P
     OTR = kla * (DOstar_tp - y[1])
     dy[1] = OUR + OTR - (y[1] * dilution / y[4])
 
@@ -442,7 +437,7 @@ def indpensim_ode_py(t, y, par):
     dy[9] = 3 * (a_0 ** (1 / 3)) * (1 / (1 + math.exp(-k1 * (t - t1)))) * (1 / (1 + math.exp(-k2 * (t - t2)))) - k3 * Fw
 
     # Total X
-    dy[10] = (y[11] + y[12] + y[13] + y[14])
+    dy[10] = y[11] + y[12] + y[13] + y[14]
 
     #
     #   Adding in the ODE's for hyphae
@@ -475,7 +470,7 @@ def indpensim_ode_py(t, y, par):
     dy[28] = kla * delta_c_0 * (C_star_CO2 - y[28]) - y[28] * dilution / y[4]
 
     # PAA
-    dy[29] = Fpaa * PAA_c / V - (Y_PAA_P * dP_dt) - Y_PAA_X * X_1 - m_PAA * y[3] - y[29] * dilution / y[4]
+    dy[29] = Fpaa * PAA_c / V - Y_PAA_P * dP_dt - Y_PAA_X * X_1 - m_PAA * y[3] - y[29] * dilution / y[4]
 
     # N
     X_C_nitrogen = (-r_b0 - r_e1 - r_d1 - r_d4) * Y_NX

@@ -7,7 +7,7 @@ A fresh web application based on PenSimPy and [Quartic.AI](https://quartic.ai/) 
 #### How to execute
 ```
 pip install -r requirements.txt
-python main.py --total_runs 1 --num_of_batches 1 --plot_res True --save_res True
+python main.py --total_runs 1 --num_of_batches 1 --plot_res 1 --save_res 1
 ```
 #### Setup in main.py
 ```

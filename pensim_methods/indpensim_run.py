@@ -42,78 +42,78 @@ def indpensim_run(Batch_no, batch_run_flags):
 
         # Defining consistent seed for random number generator for each variable
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
-        Rand_ref = Rand_ref + 1
+        Rand_ref += 1
         intial_conds = 0.5 + 0.05 * np.random.randn(1)[0]
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
-        Rand_ref = Rand_ref + 1
+        Rand_ref += 1
 
         # create x0
         x0 = X0()
         x0.mux = 0.41 + 0.025 * np.random.randn(1)[0]
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
-        Rand_ref = Rand_ref + 1
+        Rand_ref += 1
         x0.mup = 0.041 + 0.0025 * np.random.randn(1)[0]
         h = 0.2
 
         #  Initialising simulation
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
-        Rand_ref = Rand_ref + 1
+        Rand_ref += 1
         x0.S = 1 + 0.1 * np.random.randn(1)[0]
 
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
-        Rand_ref = Rand_ref + 1
+        Rand_ref += 1
         x0.DO2 = 15 + 0.5 * np.random.randn(1)[0]
 
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
-        Rand_ref = Rand_ref + 1
+        Rand_ref += 1
         x0.X = intial_conds + 0.1 * np.random.randn(1)[0]
 
         x0.P = 0
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
-        Rand_ref = Rand_ref + 1
+        Rand_ref += 1
         x0.V = 5.800e+04 + 500 * np.random.randn(1)[0]
 
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
-        Rand_ref = Rand_ref + 1
+        Rand_ref += 1
         x0.Wt = 6.2e+04 + 500 * np.random.randn(1)[0]
 
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
-        Rand_ref = Rand_ref + 1
+        Rand_ref += 1
         x0.CO2outgas = 0.038 + 0.001 * np.random.randn(1)[0]
 
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
-        Rand_ref = Rand_ref + 1
+        Rand_ref += 1
         x0.O2 = 0.20 + 0.05 * np.random.randn(1)[0]
 
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
-        Rand_ref = Rand_ref + 1
+        Rand_ref += 1
         x0.pH = 6.5 + 0.1 * np.random.randn(1)[0]
 
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
-        Rand_ref = Rand_ref + 1
+        Rand_ref += 1
         x0.T = 297 + 0.5 * np.random.randn(1)[0]
 
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
-        Rand_ref = Rand_ref + 1
+        Rand_ref += 1
         x0.a0 = intial_conds * 0.3333333333333333
         x0.a1 = intial_conds * 0.6666666666666666
         x0.a3 = 0
         x0.a4 = 0
         x0.Culture_age = 0
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
-        Rand_ref = Rand_ref + 1
+        Rand_ref += 1
 
         x0.PAA = 1400 + 50 * np.random.randn(1)[0]
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
-        Rand_ref = Rand_ref + 1
+        Rand_ref += 1
 
         x0.NH3 = 1700 + 50 * np.random.randn(1)[0]
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
-        Rand_ref = Rand_ref + 1
+        Rand_ref += 1
 
         alpha_kla = 85 + 10 * np.random.randn(1)[0]
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
-        Rand_ref = Rand_ref + 1
+        Rand_ref += 1
 
         PAA_c = 530000 + 20000 * np.random.randn(1)[0]
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
