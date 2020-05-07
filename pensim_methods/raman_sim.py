@@ -50,33 +50,26 @@ def raman_sim(k, x, h, T, raman_spectra):
 
     # Glucose peaks
     # Peak A
-    Glucose_raw_peaks_G_peaka[78: 359, 0] = [(35 * (2 * math.pi) ** .5) ** -1 * math.exp(-0.5 * (j / 35) ** 2) for j in
-                                             range(-140, 141)]
+    Glucose_raw_peaks_G_peaka[78: 359, 0] = [0.011398350868612364 * math.exp(-0.0004081632653061224 * j * j) for j in range(-140, 141)]
 
     # Peak B
-    Glucose_raw_peaks_G_peakb[598: 679, 0] = [(10 * (2 * math.pi) ** .5) ** -1 * math.exp(-0.5 * (j / 10) ** 2) / 4.3
-                                              for j in range(-40, 41)]
+    Glucose_raw_peaks_G_peakb[598: 679, 0] = [0.009277727451196111 * math.exp(-0.005 * j * j) for j in range(-40, 41)]
 
     # Peak C
-    Glucose_raw_peaks_G_peakc[852: 1253, 0] = [(50 * (2 * math.pi) ** .5) ** -1 * math.exp(-0.5 * (j / 50) ** 2) for j
-                                               in range(-200, 201)]
+    Glucose_raw_peaks_G_peakc[852: 1253, 0] = [0.007978845608028654 * math.exp(-0.0002 * j * j) for j in range(-200, 201)]
 
     # PAA  peaks
     # Peak A
-    PAA_raw_peaks_G_peaka[298: 539, 0] = [(30 * (2 * math.pi) ** .5) ** -1 * math.exp(-0.5 * (j / 30) ** 2) for j in
-                                          range(-120, 121)]
+    PAA_raw_peaks_G_peaka[298: 539, 0] = [0.01329807601338109 * math.exp(-0.0005555555555555556 * j * j) for j in range(-120, 121)]
 
     # Peak B
-    PAA_raw_peaks_G_peakb[808: 869, 0] = [((7.5 * (2 * math.pi) ** .5) ** -1 * math.exp(-0.5 * (j / 7.5) ** 2) / 4.3)
-                                          for j in range(-30, 31)]
+    PAA_raw_peaks_G_peakb[808: 869, 0] = [0.01237030326826148 * math.exp(-0.008888888888888889 * j * j) for j in range(-30, 31)]
 
     # Adding in  Peak aPen G Peak
-    Product_raw_peaka[679: 920, 0] = [(15 * (2 * math.pi) ** .5) ** -1 * math.exp(-0.5 * (j / 15) ** 2) for j in
-                                      range(-120, 121)]
+    Product_raw_peaka[679: 920, 0] = [0.02659615202676218 * math.exp(-0.0022222222222222222 * j * j) for j in range(-120, 121)]
 
     # Adding in  Peak b for Pen G Peak
-    Product_raw_peakb[299: 2100, 0] = [(15 * (2 * math.pi) ** .5) ** -1 * math.exp(-0.5 * (j / 15) ** 2) for j in
-                                       range(-900, 901)]
+    Product_raw_peakb[299: 2100, 0] = [0.02659615202676218 * math.exp(-0.0022222222222222222 * j * j) for j in range(-900, 901)]
 
     total_peaks_G = Glucose_raw_peaks_G_peaka + Glucose_raw_peaks_G_peakb + Glucose_raw_peaks_G_peakc
     total_peaks_PAA = PAA_raw_peaks_G_peaka + PAA_raw_peaks_G_peakb

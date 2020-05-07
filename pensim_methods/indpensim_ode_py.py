@@ -161,7 +161,7 @@ def indpensim_ode_py(t, y, par):
 
     # Process parameters
     # Adding in age-dependant term
-    A_t1 = ((y[10]) / (y[11] + y[12] + y[13] + y[14]))
+    A_t1 = (y[10]) / (y[11] + y[12] + y[13] + y[14])
 
     # Variables
     s = y[0]
@@ -171,11 +171,11 @@ def indpensim_ode_py(t, y, par):
     total_X = y[11] + y[12] + y[13] + y[14]  # Total Biomass
 
     # Calculating liquid height in vessel
-    h_b = (y[4] / 1000) / (math.pi * (r ** 2))
+    h_b = (y[4] / 1000) / (3.141592653589793 * r ** 2)
     h_b = h_b * (1 - epsilon)
 
     # Calculating log mean pressure of vessel
-    pressure_bottom = 1 + pressure + ((pho_b * h_b) * 9.81e-5)
+    pressure_bottom = 1 + pressure + pho_b * h_b * 9.81e-5
     pressure_top = 1 + pressure
     log_mean_pressure = (pressure_bottom - pressure_top) / (math.log(pressure_bottom / pressure_top))
     total_pressure = log_mean_pressure
@@ -225,7 +225,7 @@ def indpensim_ode_py(t, y, par):
     # Main rate equations for kinetic expressions
     # Penicillin inhibition curve
     P_inhib = 2.5 * P_std_dev * (
-            (P_std_dev * np.sqrt(2 * math.pi)) ** -1 * math.exp(-0.5 * ((s - mean_P) / P_std_dev) ** 2))
+            (P_std_dev * 2.5066282746310002) ** -1 * math.exp(-0.5 * ((s - mean_P) / P_std_dev) ** 2))
 
     # Specific growth rates of biomass regions with inhibition effect
     mu_a0 = ratio_mu_e_mu_b * mux_max * pH_inhib * NH3_inhib * T_inhib * DO_2_inhib_X * CO2_inhib * PAA_inhib_X
@@ -255,7 +255,7 @@ def indpensim_ode_py(t, y, par):
     phi[0] = y[26]
 
     for k in range(2, 11):
-        phi[k - 1] = ((4 * math.pi * (1.5e-4 + (k - 2) * delta_r) ** 3) / 3) * y[n] * delta_r
+        phi[k - 1] = ((12.566370614359172 * (1.5e-4 + (k - 2) * delta_r) ** 3) / 3) * y[n] * delta_r
         n += 1
 
     # Total vacuole volume
@@ -274,7 +274,7 @@ def indpensim_ode_py(t, y, par):
 
     # ------ Vacuole Volume -------------------
     # n_0 - mean vacoule number density for vacuoles sized ranging from delta_0 -> r_0
-    dn0_dt = ((mu_v * v_a1) / (K_v + s)) * ((6 / math.pi) * ((r_0 + delta_0) ** -3)) - k_v * y[15]
+    dn0_dt = ((mu_v * v_a1) / (K_v + s)) * (1.909859317102744 * ((r_0 + delta_0) ** -3)) - k_v * y[15]
 
     n = 16
     # n_j - mean vacoule number density for vacuoles sized ranging from r_{j}
@@ -308,7 +308,7 @@ def indpensim_ode_py(t, y, par):
     n_k = y[24]
 
     # mean vacuole
-    dphi_0_dt = ((mu_v * v_a1) / (K_v + s)) - k_v * y[15] * (math.pi * (r_0 + delta_0) ** 3) / 6
+    dphi_0_dt = ((mu_v * v_a1) / (K_v + s)) - k_v * y[15] * (3.141592653589793 * (r_0 + delta_0) ** 3) / 6
 
     # Volume and Weight expressions
     F_evp = y[4] * alpha_evp * (math.exp(2.5 * (y[7] - T0) / (Tv - T0)) - 1)
@@ -327,10 +327,10 @@ def indpensim_ode_py(t, y, par):
     da_0_dt = r_b0 - r_d1 - y[11] * dilution / y[4]
 
     # Non growing regions
-    da_1_dt = r_e1 - r_b0 + r_d1 - (math.pi * ((r_k + r_m) ** 3) / 6) * rho_d * k_v * n_k - y[12] * dilution / y[4]
+    da_1_dt = r_e1 - r_b0 + r_d1 - (3.141592653589793 * ((r_k + r_m) ** 3) / 6) * rho_d * k_v * n_k - y[12] * dilution / y[4]
 
     # Degenerated regions
-    da_3_dt = (math.pi * ((r_k + r_m) ** 3) / 6) * rho_d * k_v * n_k - r_d4 - y[13] * dilution / y[4]
+    da_3_dt = (3.141592653589793 * ((r_k + r_m) ** 3) / 6) * rho_d * k_v * n_k - r_d4 - y[13] * dilution / y[4]
 
     # Autolysed regions
     da_4_dt = r_d4 - y[14] * dilution / y[4]
@@ -372,7 +372,7 @@ def indpensim_ode_py(t, y, par):
             y[4] - y[0] * dilution / y[4]
 
     # Dissolved oxygen
-    V_s = Fg / (math.pi * (r ** 2))
+    V_s = Fg / (3.141592653589793 * r ** 2)
     T = y[7]
     V = y[4]
     V_m = y[4] / 1000
@@ -418,11 +418,11 @@ def indpensim_ode_py(t, y, par):
 
     if pH_balance == 1:
         dy[6] = -gamma1 * (r_b0 + r_e1 + r_d4 + r_d1 + m_ph * total_X) - gamma1 * r_p - gamma2 * pH_dis + (
-                (-B - np.sqrt(B ** 2 + 4e-14)) / 2 - y[6])
+                (-B - (B ** 2 + 4e-14)**.5) / 2 - y[6])
 
     if pH_balance == 0:
         dy[6] = gamma1 * (r_b0 + r_e1 + r_d4 + r_d1 + m_ph * total_X) + gamma1 * r_p + gamma2 * pH_dis + (
-                (-B + np.sqrt(B ** 2 + 4e-14)) / 2 - y[6])
+                (-B + (B ** 2 + 4e-14)**.5) / 2 - y[6])
 
     # Temperature
     Ws = P_t1

@@ -60,10 +60,10 @@ if __name__ == "__main__":
         median_T = [statistics.median(Ts[:, i]) for i in range(0, len(Ts[0]))]
         peni_products.append(penicillin_yields)
         # Save data
-        if save_res:
+        if save_res == "True":
             save_csv(run_id, avg_pHs, avg_Ts, penicillin_yields, median_pH, median_T, Xref)
 
     print(f"=== peni_products: {peni_products}")
     # Plot the last res
-    if plot_res:
+    if plot_res == "True":
         show_params(Xref)
