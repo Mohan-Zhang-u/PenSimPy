@@ -32,6 +32,7 @@ def indpensim(xd, x0, h, T, param_list, ctrl_flags, recipe):
     x0.pH = 10 ** (-x0.pH)
 
     # Load Raman Spectra Reference
+    # TODO: move it outside indpensim_run
     reference_Spectra_2200 = np.genfromtxt('./spectra_data/reference_Specra.txt', dtype='str')
     raman_wavenumber = reference_Spectra_2200[0:2200, 0].astype('int').tolist()
     raman_spectra = reference_Spectra_2200[0:2200, 1].astype('float').tolist()
@@ -39,6 +40,7 @@ def indpensim(xd, x0, h, T, param_list, ctrl_flags, recipe):
     # creates batch structure
     x = create_batch(h, T)
 
+    # TODO: move it outside indpensim_run
     # Load Matlab Model
     Matlab_model = loadmat('./Matlab_model/PAA_PLS_model.mat')['b']
     model_data = Matlab_model[3, :].tolist()
