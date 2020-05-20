@@ -1,6 +1,8 @@
 from pensim_classes.CtrlFlags import CtrlFlags
 import numpy as np
 from scipy.signal import lfilter
+
+from pensim_classes.constants import H
 from pensim_methods.create_channel import create_channel
 from pensim_classes.Channel import Channel
 from pensim_methods.parameter_list import parameter_list
@@ -9,7 +11,7 @@ from pensim_classes.Xinterp import Xinterp
 from pensim_methods.indpensim import indpensim
 
 
-def indpensim_run(Batch_no, batch_run_flags):
+def indpensim_run(Batch_no, batch_run_flags, recipe):
     """
     Initialize the params and call the simulator
     :param Batch_no:
@@ -53,7 +55,7 @@ def indpensim_run(Batch_no, batch_run_flags):
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
         Rand_ref += 1
         x0.mup = 0.041 + 0.0025 * np.random.randn(1)[0]
-        h = 0.2
+        h = H
 
         #  Initialising simulation
         np.random.seed(Seed_ref + Batch_no + Rand_ref)
@@ -221,6 +223,5 @@ def indpensim_run(Batch_no, batch_run_flags):
     # Import parameter list
     param_list = parameter_list(x0, alpha_kla, N_conc_paa, PAA_c)
 
-    # Run simulation
-    Xref = indpensim(xinterp, x0, h, T, param_list, ctrl_flags)
-    return Xref, h
+    # Create simulation generator
+    return indpensim(xinterp, x0, h, T, param_list, ctrl_flags, recipe)
