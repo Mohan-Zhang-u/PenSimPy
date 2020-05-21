@@ -1,5 +1,5 @@
 import numpy as np
-from helper.smooth_py import smooth_py
+from pensimpy.helper.smooth_py import smooth_py
 
 
 def raman_sim(k, x, h, T, raman_spectra):

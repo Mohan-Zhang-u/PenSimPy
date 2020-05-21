@@ -1,13 +1,12 @@
 import numpy as np
-from pensim_methods.create_batch import create_batch
-from pensim_methods.fctrl_indpensim import fctrl_indpensim
+from pensimpy.pensim_methods.create_batch import create_batch
+from pensimpy.pensim_methods.fctrl_indpensim import fctrl_indpensim
 from scipy.integrate import odeint
 import math
-from pensim_methods.indpensim_ode_py import indpensim_ode_py
-from pensim_methods.raman_sim import raman_sim
-from pensim_methods.substrate_prediction import substrate_prediction
+from pensimpy.pensim_methods.indpensim_ode_py import indpensim_ode_py
+from pensimpy.pensim_methods.raman_sim import raman_sim
 from tqdm.auto import tqdm
-from pensim_classes.Constants import raman_wavenumber, raman_spectra, model_data
+from pensimpy.pensim_classes.Constants import raman_wavenumber, raman_spectra
 
 
 def indpensim(xd, x0, h, T, param_list, ctrl_flags, recipe):
@@ -35,7 +34,7 @@ def indpensim(xd, x0, h, T, param_list, ctrl_flags, recipe):
     x = create_batch(h, T)
 
     # main loop
-    for k in tqdm(range(1, N + 1)):
+    for k in range(1, N + 1):
         # fills the batch with just the initial conditions so the control system
         # can provide the first input. These will be overwritten after
         # the ODEs are integrated.

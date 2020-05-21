@@ -1,14 +1,14 @@
-from pensim_classes.CtrlFlags import CtrlFlags
+from pensimpy.pensim_classes.CtrlFlags import CtrlFlags
 import numpy as np
 from scipy.signal import lfilter
 
-from pensim_classes.Constants import H
-from pensim_methods.create_channel import create_channel
-from pensim_classes.Channel import Channel
-from pensim_methods.parameter_list import parameter_list
-from pensim_classes.X0 import X0
-from pensim_classes.Xinterp import Xinterp
-from pensim_methods.indpensim import indpensim
+from pensimpy.pensim_classes.Constants import H
+from pensimpy.pensim_methods.create_channel import create_channel
+from pensimpy.pensim_classes.Channel import Channel
+from pensimpy.pensim_methods.parameter_list import parameter_list
+from pensimpy.pensim_classes.X0 import X0
+from pensimpy.pensim_classes.Xinterp import Xinterp
+from pensimpy.pensim_methods.indpensim import indpensim
 
 
 def indpensim_run(Batch_no, batch_run_flags, recipe):

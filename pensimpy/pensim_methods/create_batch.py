@@ -1,7 +1,7 @@
 import numpy as np
-from pensim_classes.X import X
-from pensim_classes.Channel import Channel
-from pensim_methods.create_channel import create_channel
+from pensimpy.pensim_classes.X import X
+from pensimpy.pensim_classes.Channel import Channel
+from pensimpy.pensim_methods.create_channel import create_channel
 
 
 def create_batch(h, T):
