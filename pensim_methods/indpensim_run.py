@@ -2,7 +2,7 @@ from pensim_classes.CtrlFlags import CtrlFlags
 import numpy as np
 from scipy.signal import lfilter
 
-from pensim_classes.constants import H
+from pensim_classes.Constants import H
 from pensim_methods.create_channel import create_channel
 from pensim_classes.Channel import Channel
 from pensim_methods.parameter_list import parameter_list

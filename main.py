@@ -2,8 +2,8 @@ from pensim_classes.BatchRunFlags import BatchRunFlags
 import numpy as np
 import time
 
-from pensim_classes.constants import H
-from pensim_classes.recipe import Recipe
+from pensim_classes.Constants import H
+from pensim_classes.Recipe import Recipe
 from pensim_methods.indpensim_run import indpensim_run
 import statistics
 from helper.show_params import show_params

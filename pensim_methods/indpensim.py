@@ -7,7 +7,7 @@ from pensim_methods.indpensim_ode_py import indpensim_ode_py
 from pensim_methods.raman_sim import raman_sim
 from pensim_methods.substrate_prediction import substrate_prediction
 from tqdm.auto import tqdm
-from scipy.io import loadmat
+from pensim_classes.Constants import raman_wavenumber, raman_spectra, model_data
 
 
 def indpensim(xd, x0, h, T, param_list, ctrl_flags, recipe):
@@ -31,19 +31,8 @@ def indpensim(xd, x0, h, T, param_list, ctrl_flags, recipe):
     # converts from pH to H+ conc.
     x0.pH = 10 ** (-x0.pH)
 
-    # Load Raman Spectra Reference
-    # TODO: move it outside indpensim_run
-    reference_Spectra_2200 = np.genfromtxt('./spectra_data/reference_Specra.txt', dtype='str')
-    raman_wavenumber = reference_Spectra_2200[0:2200, 0].astype('int').tolist()
-    raman_spectra = reference_Spectra_2200[0:2200, 1].astype('float').tolist()
-
     # creates batch structure
     x = create_batch(h, T)
-
-    # TODO: move it outside indpensim_run
-    # Load Matlab Model
-    Matlab_model = loadmat('./Matlab_model/PAA_PLS_model.mat')['b']
-    model_data = Matlab_model[3, :].tolist()
 
     # main loop
     for k in tqdm(range(1, N + 1)):
@@ -309,7 +298,7 @@ def indpensim(xd, x0, h, T, param_list, ctrl_flags, recipe):
 
         # Calculating the CER
         x.CER.y[k - 1] = (1.9642857142857144 * x.Fg.y[k - 1]) * (
-                    (0.0065 * x.CO2outgas.y[k - 1]) * (0.7902 / (1 - O2_in - x.CO2outgas.y[k - 1] / 100) - 0.0330))
+                (0.0065 * x.CO2outgas.y[k - 1]) * (0.7902 / (1 - O2_in - x.CO2outgas.y[k - 1] / 100) - 0.0330))
         x.CER.t[k - 1] = t_tmp
 
         # Adding in Raman Spectra
@@ -320,7 +309,16 @@ def indpensim(xd, x0, h, T, param_list, ctrl_flags, recipe):
                 x = raman_sim(k, x, h, T, raman_spectra)
                 x = substrate_prediction(k, x, model_data)
 
-            yield {"type": "raman_update", "x": x, "k": k}
+            if k % 60 == 0:
+                yield {"type": "raman_update",
+                       "k": k - 1,
+                       "Intensity": x.Raman_Spec.Intensity[k - 1],
+                       "Penicillin Concentration": x.P.y[k - 1]}
+            else:
+                yield {"type": "raman_update",
+                       "k": k - 1,
+                       "Intensity": x.Raman_Spec.Intensity[k - 1],
+                       "Penicillin Concentration": ''}
 
         # Off-line measurements recorded
         if np.remainder(t_tmp, ctrl_flags.Off_line_m) == 0 or t_tmp == 1 or t_tmp == T:
