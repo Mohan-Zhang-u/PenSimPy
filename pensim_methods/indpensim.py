@@ -308,16 +308,9 @@ def indpensim(xd, x0, h, T, param_list, ctrl_flags, recipe):
             elif ctrl_flags.Raman_spec == 2:
                 x = raman_sim(k, x, h, T, raman_spectra)
 
-            if k % 60 == 0:
-                yield {"type": "raman_update",
-                       "k": k - 1,
-                       "Intensity": x.Raman_Spec.Intensity[k - 1],
-                       "Penicillin Concentration": x.P.y[k - 1]}
-            else:
-                yield {"type": "raman_update",
-                       "k": k - 1,
-                       "Intensity": x.Raman_Spec.Intensity[k - 1],
-                       "Penicillin Concentration": ''}
+            yield {"type": "raman_update",
+                   "k": k - 1,
+                   "Intensity": x.Raman_Spec.Intensity[k - 1]}
 
         # Off-line measurements recorded
         if np.remainder(t_tmp, ctrl_flags.Off_line_m) == 0 or t_tmp == 1 or t_tmp == T:
