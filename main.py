@@ -39,6 +39,7 @@ if __name__ == "__main__":
         Ts = []
         median_pH = []
         median_T = []
+        sum_intensity = np.zeros(2200)
 
         for Batch_no in range(1, num_of_batches + 1):
             print(f"==== Batch_no: {Batch_no}")
@@ -47,17 +48,27 @@ if __name__ == "__main__":
                 if result['type'] == 'raman_update':
                     pass
                     # get intensity
-                    # result['x'].Raman_Spec.Intensity
+                    intensity = result['Intensity']
+                    sum_intensity += intensity
 
                     # kth 12 minutes
-                    # print(result['k'])
+                    k = result['k']
+
+                    # apply ML model for prediction:  penicillin = Model(intensity)
+                    penicillin_yields.append(1)
 
                     # TODO: feed intensities to model to get pensim concentration prediction
                     # TODO: send concentration prediction as well as k via websocket
                 elif result['type'] == 'batch_end':
                     # for returning final accuracy and average intensity
                     # TODO: send final accuracy and averaged intensity via websocket
-                    Xref = result['x']
+                    avg_intensity = sum_intensity / 1150
+
+                    # lower/upper bound is based on the interpolation method
+                    lower_bound = 1
+                    upper_bound = 1
+                    res = penicillin_yields[(penicillin_yields > lower_bound) & (penicillin_yields < upper_bound)]
+                    accuracy = round(len(res) / len(penicillin_yields) * 100, 2)
                 else:
                     raise ValueError("Unknown flag")
 
