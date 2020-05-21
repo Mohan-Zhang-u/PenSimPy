@@ -307,7 +307,6 @@ def indpensim(xd, x0, h, T, param_list, ctrl_flags, recipe):
                 x = raman_sim(k, x, h, T, raman_spectra)
             elif ctrl_flags.Raman_spec == 2:
                 x = raman_sim(k, x, h, T, raman_spectra)
-                x = substrate_prediction(k, x, model_data)
 
             if k % 60 == 0:
                 yield {"type": "raman_update",
