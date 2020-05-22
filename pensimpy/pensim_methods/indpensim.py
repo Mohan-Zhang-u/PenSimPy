@@ -1,17 +1,15 @@
 import numpy as np
-from pensim_methods.create_batch import create_batch
-from pensim_methods.fctrl_indpensim import fctrl_indpensim
+from pensimpy.pensim_methods.create_batch import create_batch
+from pensimpy.pensim_methods.fctrl_indpensim import fctrl_indpensim
 from scipy.integrate import odeint
 import math
-from pensim_methods.indpensim_ode_py import indpensim_ode_py
-from pensim_methods.raman_sim import raman_sim
-from pensim_methods.substrate_prediction import substrate_prediction
+from pensimpy.pensim_methods.indpensim_ode_py import indpensim_ode_py
+from pensimpy.pensim_methods.raman_sim import raman_sim
 from tqdm.auto import tqdm
-from scipy.io import loadmat
-from helper.get_recipe_trend import get_recipe_trend
+from pensimpy.pensim_classes.Constants import raman_wavenumber, raman_spectra
 
 
-def indpensim(xd, x0, h, T, param_list, ctrl_flags):
+def indpensim(xd, x0, h, T, param_list, ctrl_flags, recipe):
     """
     Simulate the fermentation process by solving ODE
     :param xd:
@@ -20,6 +18,7 @@ def indpensim(xd, x0, h, T, param_list, ctrl_flags):
     :param T:
     :param param_list:
     :param ctrl_flags:
+    :param recipe:
     :return:
     """
     # simulation timing init
@@ -31,58 +30,11 @@ def indpensim(xd, x0, h, T, param_list, ctrl_flags):
     # converts from pH to H+ conc.
     x0.pH = 10 ** (-x0.pH)
 
-    # Load Raman Spectra Reference
-    reference_Spectra_2200 = np.genfromtxt('./spectra_data/reference_Specra.txt', dtype='str')
-    raman_wavenumber = reference_Spectra_2200[0:2200, 0].astype('int').tolist()
-    raman_spectra = reference_Spectra_2200[0:2200, 1].astype('float').tolist()
-
     # creates batch structure
     x = create_batch(h, T)
 
-    # Load Matlab Model
-    Matlab_model = loadmat('./Matlab_model/PAA_PLS_model.mat')['b']
-    model_data = Matlab_model[3, :].tolist()
-
-    # recipes
-    Recipe_Fs = [15, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400, 800, 1750]
-    Recipe_Fs_sp = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 80]
-
-    # # green
-    # Recipe_Fs = [15, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400, 500, 800, 1750]
-    # Recipe_Fs_sp = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 0, 0]
-
-    # # pink
-    # Recipe_Fs = [15, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400, 500, 550, 600, 650, 700, 800, 1750]
-    # Recipe_Fs_sp = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 100, 110, 120, 110, 250, 250]
-    Recipe_Fs_trend = get_recipe_trend(Recipe_Fs, Recipe_Fs_sp)
-
-    Recipe_Foil = [20, 80, 280, 300, 320, 340, 360, 380, 400, 1750]
-    Recipe_Foil_sp = [22, 30, 35, 34, 33, 32, 31, 30, 29, 23]
-    Recipe_Foil_trend = get_recipe_trend(Recipe_Foil, Recipe_Foil_sp)
-
-    Recipe_Fg = [40, 100, 200, 450, 1000, 1250, 1750]
-    Recipe_Fg_sp = [30, 42, 55, 60, 75, 65, 60]
-    Recipe_Fg_trend = get_recipe_trend(Recipe_Fg, Recipe_Fg_sp)
-
-    Recipe_pres = [62, 125, 150, 200, 500, 750, 1000, 1750]
-    Recipe_pres_sp = [0.6, 0.7, 0.8, 0.9, 1.1, 1, 0.9, 0.9]
-    Recipe_pres_trend = get_recipe_trend(Recipe_pres, Recipe_pres_sp)
-
-    Recipe_discharge = [500, 510, 650, 660, 750, 760, 850, 860, 950, 960, 1050, 1060, 1150, 1160, 1250, 1260, 1350,
-                        1360, 1750]
-    Recipe_discharge_sp = [0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 0]
-    Recipe_discharge_trend = get_recipe_trend(Recipe_discharge, Recipe_discharge_sp)
-
-    Recipe_water = [250, 375, 750, 800, 850, 1000, 1250, 1350, 1750]
-    Recipe_water_sp = [0, 500, 100, 0, 400, 150, 250, 0, 100]
-    Recipe_water_trend = get_recipe_trend(Recipe_water, Recipe_water_sp)
-
-    Recipe_PAA = [25, 200, 1000, 1500, 1750]
-    Recipe_PAA_sp = [5, 0, 10, 4, 0]
-    Recipe_PAA_trend = get_recipe_trend(Recipe_PAA, Recipe_PAA_sp)
-
     # main loop
-    for k in tqdm(range(1, N + 1)):
+    for k in range(1, N + 1):
         # fills the batch with just the initial conditions so the control system
         # can provide the first input. These will be overwritten after
         # the ODEs are integrated.
@@ -98,13 +50,13 @@ def indpensim(xd, x0, h, T, param_list, ctrl_flags):
 
         # gets MVs
         u, x = fctrl_indpensim(x, xd, k, h, ctrl_flags,
-                               Recipe_Fs_trend[k - 1],
-                               Recipe_Foil_trend[k - 1],
-                               Recipe_Fg_trend[k - 1],
-                               Recipe_pres_trend[k - 1],
-                               Recipe_discharge_trend[k - 1],
-                               Recipe_water_trend[k - 1],
-                               Recipe_PAA_trend[k - 1])
+                               recipe.Fs_trend[k - 1],
+                               recipe.Foil_trend[k - 1],
+                               recipe.Fg_trend[k - 1],
+                               recipe.pres_trend[k - 1],
+                               recipe.discharge_trend[k - 1],
+                               recipe.water_trend[k - 1],
+                               recipe.PAA_trend[k - 1])
 
         # builds initial conditions and control vectors specific to
         # indpensim_ode using ode45
@@ -345,7 +297,7 @@ def indpensim(xd, x0, h, T, param_list, ctrl_flags):
 
         # Calculating the CER
         x.CER.y[k - 1] = (1.9642857142857144 * x.Fg.y[k - 1]) * (
-                    (0.0065 * x.CO2outgas.y[k - 1]) * (0.7902 / (1 - O2_in - x.CO2outgas.y[k - 1] / 100) - 0.0330))
+                (0.0065 * x.CO2outgas.y[k - 1]) * (0.7902 / (1 - O2_in - x.CO2outgas.y[k - 1] / 100) - 0.0330))
         x.CER.t[k - 1] = t_tmp
 
         # Adding in Raman Spectra
@@ -354,7 +306,10 @@ def indpensim(xd, x0, h, T, param_list, ctrl_flags):
                 x = raman_sim(k, x, h, T, raman_spectra)
             elif ctrl_flags.Raman_spec == 2:
                 x = raman_sim(k, x, h, T, raman_spectra)
-                x = substrate_prediction(k, x, model_data)
+
+            yield {"type": "raman_update",
+                   "k": k - 1,
+                   "Intensity": x.Raman_Spec.Intensity[k - 1]}
 
         # Off-line measurements recorded
         if np.remainder(t_tmp, ctrl_flags.Off_line_m) == 0 or t_tmp == 1 or t_tmp == T:
@@ -387,4 +342,4 @@ def indpensim(xd, x0, h, T, param_list, ctrl_flags):
 
     x.Raman_Spec.Wavenumber = raman_wavenumber
 
-    return x
+    yield {"type": "batch_end", "x": x}
