@@ -83,26 +83,27 @@ if __name__ == "__main__":
             penicillin_harvested_end_of_batch = Xref.V.y[-1] * Xref.P.y[-1]
             penicillin_yield_total = penicillin_harvested_end_of_batch - penicillin_harvested_during_batch
 
-            penicillin_yields.append(penicillin_yield_total / 1000)
-            avg_pH = sum(Xref.pH.y) / len(Xref.pH.y)
-            avg_pHs.append(avg_pH)
-            avg_T = sum(Xref.T.y) / len(Xref.T.y)
-            avg_Ts.append(avg_T)
-
-            pHs.append(Xref.pH.y)
-            Ts.append(Xref.T.y)
-            print(f"=== penicillin_yield_total: {penicillin_yield_total / 1000}")
-
-        pHs = np.array(pHs)
-        median_pH = [statistics.median(pHs[:, i]) for i in range(0, len(pHs[0]))]
-        Ts = np.array(Ts)
-        median_T = [statistics.median(Ts[:, i]) for i in range(0, len(Ts[0]))]
-        peni_products.append(penicillin_yields)
-        # Save data
-        if save_res == 1:
-            save_csv(run_id, avg_pHs, avg_Ts, penicillin_yields, median_pH, median_T, Xref)
-
-    print(f"=== peni_products: {peni_products}")
-    # Plot the last res
-    if plot_res == 1:
-        show_params(Xref)
+            penicillin_yields = penicillin_yield_total / 1000
+            save_csv(run_id, None, None, penicillin_yields, None, None, Xref)
+    #         avg_pH = sum(Xref.pH.y) / len(Xref.pH.y)
+    #         avg_pHs.append(avg_pH)
+    #         avg_T = sum(Xref.T.y) / len(Xref.T.y)
+    #         avg_Ts.append(avg_T)
+    #
+    #         pHs.append(Xref.pH.y)
+    #         Ts.append(Xref.T.y)
+    #         print(f"=== penicillin_yield_total: {penicillin_yield_total / 1000}")
+    #
+    #     pHs = np.array(pHs)
+    #     median_pH = [statistics.median(pHs[:, i]) for i in range(0, len(pHs[0]))]
+    #     Ts = np.array(Ts)
+    #     median_T = [statistics.median(Ts[:, i]) for i in range(0, len(Ts[0]))]
+    #     peni_products.append(penicillin_yields)
+    #     # Save data
+    #     if save_res == 1:
+    #         save_csv(run_id, avg_pHs, avg_Ts, penicillin_yields, median_pH, median_T, Xref)
+    #
+    # print(f"=== peni_products: {peni_products}")
+    # # Plot the last res
+    # if plot_res == 1:
+    #     show_params(Xref)
