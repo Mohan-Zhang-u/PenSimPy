@@ -35,7 +35,7 @@ def save_csv(run_id, avg_pHs, avg_Ts, penicillin_yields, median_pH, median_T, Xr
                             "time": time,
                             "pH": Xref.pH.y,
                             "Temperature": Xref.T.y,
-                            "Sugar feedrate": Xref.Fs.y,
+                            "Sugar flowrate": Xref.Fs.y,
                             "Aeration rate": Xref.Fg.y,
                             "Acid flowrate": Xref.Fa.y,
                             "Base flowrate": Xref.Fb.y,
