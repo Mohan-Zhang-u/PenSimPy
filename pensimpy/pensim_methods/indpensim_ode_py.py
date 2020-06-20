@@ -1,5 +1,4 @@
 import math
-import numpy as np
 
 
 def indpensim_ode_py(t, y, par):
