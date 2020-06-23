@@ -16,6 +16,7 @@ from pensimpy.pensim_methods.indpensim_ode_py import indpensim_ode_py
 
 from pensimpy.helper.PIDSimple3 import PIDSimple3
 from pensimpy.helper.smooth_py import smooth_py
+from pensimpy.helper.get_observation_data import get_observation_data
 
 
 class PenSimEnv:
@@ -373,6 +374,8 @@ class PenSimEnv:
         yield_per_run = peni_yield - self.yield_pre - x.Fremoved.y[k - 1] * x.P.y[k - 1] * self.time_step / 1000
         self.yield_pre = peni_yield
 
+        observation = get_observation_data(x, k - 1)
+
         done = True if k == self.batch_length / self.time_step else False
         if done:
             # post process
@@ -381,7 +384,7 @@ class PenSimEnv:
             x.Q.y = [Q / 1000 for Q in x.Q.y]
             x.Raman_Spec.Wavenumber = raman_wavenumber
 
-        return x, yield_per_run, done
+        return observation, x, yield_per_run, done
 
     def integrate_control_strategy(self, x, k, Fs_k, Foil_k, Fg_k, Fpres_k, Fdischarge_k, Fw_k, Fpaa_k):
         """

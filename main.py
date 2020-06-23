@@ -23,7 +23,8 @@ if __name__ == "__main__":
     # Random_seed_ref from 0 to 1000
     env = PenSimEnv(random_seed_ref=666)
     done = False
-    observation = env.reset()
+    batch_data = env.reset()
+    observation = []
     recipe = Recipe()
 
     time_stamp, batch_yield, yield_pre = 0, 0, 0
@@ -37,9 +38,9 @@ if __name__ == "__main__":
         # Run and get the reward
         # observation is a class which contains all the variables, e.g. observation.Fs.y[k], observation.Fs.t[k]
         # are the Fs value and corresponding time at k
-        observation, reward, done = env.step(time_stamp,
-                                             observation,
-                                             Fs, Foil, Fg, Fpres, Fdischarge, Fw, Fpaa)
+        observation, batch_data, reward, done = env.step(time_stamp,
+                                                         batch_data,
+                                                         Fs, Foil, Fg, Fpres, Fdischarge, Fw, Fpaa)
 
         batch_yield += reward
 
