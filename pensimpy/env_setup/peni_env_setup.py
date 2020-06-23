@@ -67,7 +67,7 @@ class PenSimEnv:
         x = create_batch(self.time_step, self.batch_length)
         return x
 
-    def step(self, k, x, Fs, Foil, Fg, Fpres, Fdischarge, Fw, Fpaa):
+    def step(self, k, x, Fs, Foil, Fg, pressure, Fremoved, Fw, Fpaa):
         """
         Simulate the fermentation process by solving ODE
         """
@@ -89,7 +89,7 @@ class PenSimEnv:
             x.T.y[0] = self.x0.T
 
         # apply PID and interpolations
-        u, x = self.integrate_control_strategy(x, k, Fs, Foil, Fg, Fpres, Fdischarge, Fw, Fpaa)
+        u, x = self.integrate_control_strategy(x, k, Fs, Foil, Fg, pressure, Fremoved, Fw, Fpaa)
 
         # builds initial conditions and control vectors specific to
         # indpensim_ode using ode45
@@ -386,7 +386,7 @@ class PenSimEnv:
 
         return observation, x, yield_per_run, done
 
-    def integrate_control_strategy(self, x, k, Fs_k, Foil_k, Fg_k, Fpres_k, Fdischarge_k, Fw_k, Fpaa_k):
+    def integrate_control_strategy(self, x, k, Fs_k, Foil_k, Fg_k, pressure_k, Fremoved_k, Fw_k, Fpaa_k):
         """
         Control strategies: Sequential batch control and PID control
         :param x:
@@ -532,8 +532,8 @@ class PenSimEnv:
             Fs = Fs_k
             Foil = Foil_k
             Fg = Fg_k
-            pressure = Fpres_k
-            Fdischarge = -Fdischarge_k
+            pressure = pressure_k
+            Fdischarge = -Fremoved_k
             Fw = Fw_k
             Fpaa = Fpaa_k
 

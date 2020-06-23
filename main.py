@@ -33,15 +33,14 @@ if __name__ == "__main__":
         time_stamp += 1
 
         # Get action from recipe agent based on time
-        Fs, Foil, Fg, Fpres, Fdischarge, Fw, Fpaa = recipe.run(time_stamp)
+        Fs, Foil, Fg, pressure, Fremoved, Fw, Fpaa = recipe.run(time_stamp)
 
         # Run and get the reward
         # observation is a class which contains all the variables, e.g. observation.Fs.y[k], observation.Fs.t[k]
         # are the Fs value and corresponding time at k
         observation, batch_data, reward, done = env.step(time_stamp,
                                                          batch_data,
-                                                         Fs, Foil, Fg, Fpres, Fdischarge, Fw, Fpaa)
-
+                                                         Fs, Foil, Fg, pressure, Fremoved, Fw, Fpaa)
         batch_yield += reward
 
     print(f"=== cost: {int(time.time() - t)} s")
