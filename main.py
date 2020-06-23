@@ -1,7 +1,6 @@
 import time
 from pensimpy.pensim_classes.Recipe import Recipe
 from pensimpy.env_setup.peni_env_setup import PenSimEnv
-from pensimpy.helper.get_observation_data import get_observation_data
 from pensimpy.helper.show_params import show_params
 
 '''
