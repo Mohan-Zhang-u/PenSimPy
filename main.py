@@ -1,6 +1,7 @@
 import time
 from pensimpy.pensim_classes.Recipe import Recipe
 from pensimpy.env_setup.peni_env_setup import PenSimEnv
+from pensimpy.helper.get_observation_data import get_observation_data
 from pensimpy.helper.show_params import show_params
 
 '''
@@ -45,6 +46,7 @@ if __name__ == "__main__":
 
     print(f"=== cost: {int(time.time() - t)} s")
     print(f"=== batch_yield: {batch_yield}")
+    print(get_observation_data(observation, 1000))
 
     # # check
     # from pensimpy.pensim_classes.Constants import H

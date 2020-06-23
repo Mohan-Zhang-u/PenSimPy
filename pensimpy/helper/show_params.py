@@ -79,6 +79,46 @@ def show_params(Xref):
     plt.plot(Xref.Raman_Spec.Wavenumber, Xref.Raman_Spec.Intensity.T)
     plt.xticks([])
 
+    plt.figure()
+    plt.subplot(4, 4, 1)
+    plt.title("Vessel Weight")
+    plt.plot(Xref.Wt.t, Xref.Wt.y)
+    plt.xticks([])
+
+    plt.subplot(4, 4, 2)
+    plt.title("Dissolved oxygen concen.")
+    plt.plot(Xref.DO2.t, Xref.DO2.y)
+    plt.xticks([])
+
+    plt.subplot(4, 4, 5)
+    plt.title("Viscosity Offline")
+    plt.plot(Xref.Viscosity_offline.t, Xref.Viscosity_offline.y)
+    plt.xticks([])
+
+    plt.subplot(4, 4, 6)
+    plt.title("NH_3 concen. off-line")
+    plt.plot(Xref.NH3_offline.t, Xref.NH3_offline.y)
+    plt.xticks([])
+
+    plt.subplot(4, 4, 7)
+    plt.title("PAA concen. offline")
+    plt.plot(Xref.PAA_offline.t, Xref.PAA_offline.y)
+    plt.xticks([])
+
+    plt.subplot(4, 4, 8)
+    plt.title("Offline Penicillin concen.")
+    plt.plot(Xref.P_offline.t, Xref.P_offline.y)
+    plt.xticks([])
+
+    plt.subplot(4, 4, 9)
+    plt.title("CO2 percent in off-gas")
+    plt.plot(Xref.P_offline.t, Xref.P_offline.y)
+    plt.xticks([])
+
+    plt.subplot(4, 4, 10)
+    plt.title("Oxygen in percent in off-gas")
+    plt.plot(Xref.O2.t, Xref.O2.y)
+    plt.xticks([])
     # plt.figure()
     # plt.title("Sequential batch control")
     # plt.plot(Xref.Fs.t, Xref.Fs.y, label='Sugar feed rate')
