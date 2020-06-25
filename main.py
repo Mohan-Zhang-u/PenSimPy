@@ -23,8 +23,7 @@ if __name__ == "__main__":
     # Random_seed_ref from 0 to 1000
     env = PenSimEnv(random_seed_ref=666)
     done = False
-    batch_data = env.reset()
-    observation = []
+    observation, batch_data = env.reset()
     recipe = Recipe()
 
     time_stamp, batch_yield, yield_pre = 0, 0, 0
