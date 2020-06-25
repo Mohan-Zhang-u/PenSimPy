@@ -65,7 +65,10 @@ class PenSimEnv:
 
         # create the observation class
         x = create_batch(self.time_step, self.batch_length)
-        return x
+
+        # get observation
+        observation = get_observation_data(x, 0)
+        return observation, x
 
     def step(self, k, x, Fs, Foil, Fg, pressure, Fremoved, Fw, Fpaa):
         """
