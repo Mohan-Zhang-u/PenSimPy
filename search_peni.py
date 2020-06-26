@@ -39,9 +39,9 @@ class RecipeBuilder:
         return self.Fs_trend[t], self.Foil_trend[t], self.Fg_trend[t], self.pres_trend[t], self.discharge_trend[t], \
                self.water_trend[t], self.PAA_trend[t]
 
-total_calls = 100
+total_calls = 500
 manup_scale = 0.1
-n_calls = 25
+n_calls = 20
 x = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 80,
          22, 30, 35, 34, 33, 32, 31, 30, 29, 23,
          30, 42, 55, 60, 75, 65, 60,
@@ -54,7 +54,8 @@ while total_calls > 0:
     print(f"=== x: {x}")
     num_iter += 1
     total_calls -= n_calls
-    manup_scale -= 0.015
+    if num_iter % 5 == 0:
+        manup_scale -= 0.04
 
     Fs_len, Foil_len, Fg_len, pres_len, discharge_len, water_len = 21, 10, 7, 8, 20, 9
 
