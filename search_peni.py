@@ -85,43 +85,45 @@ class RecipeBuilder:
              0, 500, 100, 0, 400, 150, 250, 0, 100]
         num_iter = 0
 
+        space = []
+
         while total_calls > 0:
             print(f"=== running iter {num_iter}")
             print(f"=== x: {x}")
             manup_scale = 0.08 * math.exp(-0.27 * num_iter) + 0.02
             print(f"=== manup_scale: {manup_scale}")
-            num_iter += 1
             total_calls -= n_calls
 
             recipe_Fs_sp, recipe_Foil_sp, recipe_Fg_sp, \
             recipe_pres_sp, recipe_discharge_sp, recipe_water_sp = self.split(x)
 
-            space = []
-            for Fs in recipe_Fs_sp:
-                space.append(Integer(int(Fs - Fs * manup_scale), int(Fs + Fs * manup_scale)))
+            if num_iter == 0:
+                for Fs in recipe_Fs_sp:
+                    space.append(Integer(int(Fs - Fs * manup_scale), int(Fs + Fs * manup_scale)))
 
-            for Foil in recipe_Foil_sp:
-                space.append(Integer(int(Foil - Foil * manup_scale), int(Foil + Foil * manup_scale)))
+                for Foil in recipe_Foil_sp:
+                    space.append(Integer(int(Foil - Foil * manup_scale), int(Foil + Foil * manup_scale)))
 
-            for Fg in recipe_Fg_sp:
-                space.append(Integer(int(Fg - Fg * manup_scale), int(Fg + Fg * manup_scale)))
+                for Fg in recipe_Fg_sp:
+                    space.append(Integer(int(Fg - Fg * manup_scale), int(Fg + Fg * manup_scale)))
 
-            for pres in recipe_pres_sp:
-                space.append(Real(pres - pres * manup_scale, pres + pres * manup_scale))
+                for pres in recipe_pres_sp:
+                    space.append(Real(pres - pres * manup_scale, pres + pres * manup_scale))
 
-            for discharge in recipe_discharge_sp:
-                if discharge != 0:
-                    space.append(
-                        Integer(int(discharge - discharge * manup_scale), int(discharge + discharge * manup_scale)))
-                else:
-                    space.append(Integer(0, 1))
+                for discharge in recipe_discharge_sp:
+                    if discharge != 0:
+                        space.append(
+                            Integer(int(discharge - discharge * manup_scale), int(discharge + discharge * manup_scale)))
+                    else:
+                        space.append(Integer(0, 1))
 
-            for water in recipe_water_sp:
-                if water != 0:
-                    space.append(Integer(int(water - water * manup_scale), int(water + water * manup_scale)))
-                else:
-                    space.append(Integer(0, 1))
+                for water in recipe_water_sp:
+                    if water != 0:
+                        space.append(Integer(int(water - water * manup_scale), int(water + water * manup_scale)))
+                    else:
+                        space.append(Integer(0, 1))
 
+            num_iter += 1
             print(f"=== space degree: {len(space)}")
 
             res_gp = gp_minimize(self.get_batch_yield,
@@ -146,4 +148,4 @@ class RecipeBuilder:
 
 
 recipe_builder = RecipeBuilder()
-recipe_builder.benchmark(total_calls=10, n_calls=5)
+recipe_builder.benchmark(total_calls=100, n_calls=20)
