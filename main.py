@@ -21,7 +21,7 @@ if __name__ == "__main__":
     t = time.time()
 
     # Random_seed_ref from 0 to 1000
-    env = PenSimEnv(random_seed_ref=666)
+    env = PenSimEnv(random_seed_ref=123)
     done = False
     observation, batch_data = env.reset()
     recipe = Recipe()
