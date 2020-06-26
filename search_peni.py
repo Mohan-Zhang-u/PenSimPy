@@ -38,7 +38,7 @@ class RecipeBuilder:
         PAA_sp = [5, 0, 10, 4, 0]
         self.PAA_trend = get_recipe_trend(PAA, PAA_sp)
 
-    def run(self, t):
+    def recipe_at_t(self, t):
         t -= 1
         return self.Fs_trend[t], self.Foil_trend[t], self.Fg_trend[t], self.pres_trend[t], self.discharge_trend[t], \
                self.water_trend[t], self.PAA_trend[t]
@@ -69,14 +69,14 @@ class RecipeBuilder:
         time_stamp, batch_yield, yield_pre = 0, 0, 0
         while not done:
             time_stamp += 1
-            Fs, Foil, Fg, Fpres, Fdischarge, Fw, Fpaa = self.run(time_stamp)
+            Fs, Foil, Fg, Fpres, Fdischarge, Fw, Fpaa = self.recipe_at_t(time_stamp)
             observation, batch_data, reward, done = env.step(time_stamp,
                                                              batch_data,
                                                              Fs, Foil, Fg, Fpres, Fdischarge, Fw, Fpaa)
             batch_yield += reward
         return -batch_yield
 
-    def benchmark(self, total_calls, n_calls):
+    def benchmark(self, total_calls, n_calls, n_random_starts):
         x = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 80,
              22, 30, 35, 34, 33, 32, 31, 30, 29, 23,
              30, 42, 55, 60, 75, 65, 60,
@@ -126,11 +126,14 @@ class RecipeBuilder:
             num_iter += 1
             print(f"=== space degree: {len(space)}")
 
+            if num_iter == 0:
+                n_random_starts = 15
+
             res_gp = gp_minimize(self.get_batch_yield,
                                  space,
                                  x0=x,
                                  n_calls=n_calls,
-                                 n_random_starts=1,
+                                 n_random_starts=n_random_starts,
                                  random_state=123,
                                  n_jobs=-1)
             min_val = 0
@@ -148,4 +151,4 @@ class RecipeBuilder:
 
 
 recipe_builder = RecipeBuilder()
-recipe_builder.benchmark(total_calls=100, n_calls=20)
+recipe_builder.benchmark(total_calls=100, n_calls=20, n_random_starts=1)
