@@ -13,20 +13,15 @@ class RecipeBuilder:
     def __init__(self, Fs_sp, Foil_sp, Fg_sp, pres_sp, discharge_sp, water_sp):
         Fs = [15, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400, 800, 1750]
         self.Fs_trend = get_recipe_trend(Fs, Fs_sp)
-
         Foil = [20, 80, 280, 300, 320, 340, 360, 380, 400, 1750]
         self.Foil_trend = get_recipe_trend(Foil, Foil_sp)
-
         Fg = [40, 100, 200, 450, 1000, 1250, 1750]
         self.Fg_trend = get_recipe_trend(Fg, Fg_sp)
-
         pres = [62, 125, 150, 200, 500, 750, 1000, 1750]
         self.pres_trend = get_recipe_trend(pres, pres_sp)
-
-        discharge = [500, 510, 650, 660, 750, 760, 850, 860, 950, 960, 1050, 1060, 1150, 1160, 1250, 1260, 1350, 1360,
-                     1750]
+        discharge = [500, 510, 650, 660, 750, 760, 850, 860, 950, 960, 1050,
+                     1060, 1150, 1160, 1250, 1260, 1350, 1360, 1750]
         self.discharge_trend = get_recipe_trend(discharge, discharge_sp)
-
         water = [250, 375, 750, 800, 850, 1000, 1250, 1350, 1750]
         self.water_trend = get_recipe_trend(water, water_sp)
 
@@ -41,8 +36,7 @@ class RecipeBuilder:
                self.water_trend[t], self.PAA_trend[t]
 
 
-total_calls = 500
-manup_scale = 0.1
+total_calls = 100
 n_calls = 20
 x = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 80,
      22, 30, 35, 34, 33, 32, 31, 30, 29, 23,
@@ -56,15 +50,19 @@ while total_calls > 0:
     print(f"=== running iter {num_iter}")
     print(f"=== x: {x}")
     manup_scale = 0.08 * math.exp(-0.27 * num_iter) + 0.02
+    print(f"=== manup_scale: {manup_scale}")
     num_iter += 1
     total_calls -= n_calls
 
     Fs_len, Foil_len, Fg_len, pres_len, discharge_len, water_len = 21, 10, 7, 8, 20, 9
 
     recipe_Fs_sp = x[:Fs_len]
-    recipe_Foil_sp = x[Fs_len: Fs_len + Foil_len]
-    recipe_Fg_sp = x[Fs_len + Foil_len: Fs_len + Foil_len + Fg_len]
-    recipe_pres_sp = x[Fs_len + Foil_len + Fg_len: Fs_len + Foil_len + Fg_len + pres_len]
+    recipe_Foil_sp = x[Fs_len:
+                       Fs_len + Foil_len]
+    recipe_Fg_sp = x[Fs_len + Foil_len:
+                     Fs_len + Foil_len + Fg_len]
+    recipe_pres_sp = x[Fs_len + Foil_len + Fg_len:
+                       Fs_len + Foil_len + Fg_len + pres_len]
     recipe_discharge_sp = x[Fs_len + Foil_len + Fg_len + pres_len:
                             Fs_len + Foil_len + Fg_len + pres_len + discharge_len]
     recipe_water_sp = x[Fs_len + Foil_len + Fg_len + pres_len + discharge_len:
@@ -99,13 +97,6 @@ while total_calls > 0:
 
 
     def get_batch_yield(sp_points):
-        Fs_len = len(recipe_Fs_sp)
-        Foil_len = len(recipe_Foil_sp)
-        Fg_len = len(recipe_Fg_sp)
-        pres_len = len(recipe_pres_sp)
-        discharge_len = len(recipe_discharge_sp)
-        water_len = len(recipe_water_sp)
-
         Fs_sp = sp_points[:Fs_len]
         Foil_sp = sp_points[Fs_len: Fs_len + Foil_len]
         Fg_sp = sp_points[Fs_len + Foil_len: Fs_len + Foil_len + Fg_len]
@@ -126,7 +117,6 @@ while total_calls > 0:
             observation, batch_data, reward, done = env.step(time_stamp,
                                                              batch_data,
                                                              Fs, Foil, Fg, Fpres, Fdischarge, Fw, Fpaa)
-
             batch_yield += reward
         return -batch_yield
 
