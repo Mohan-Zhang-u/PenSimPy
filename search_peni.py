@@ -17,6 +17,7 @@ class RecipeBuilder:
         self.pres_trend = None
         self.discharge_trend = None
         self.water_trend = None
+        self.random_int = np.random.randint(1000)
 
     def init_recipe(self, Fs_sp, Foil_sp, Fg_sp, pres_sp, discharge_sp, water_sp):
         Fs = [15, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400, 800, 1750]
@@ -62,7 +63,7 @@ class RecipeBuilder:
     def get_batch_yield(self, sp_points):
         Fs_sp, Foil_sp, Fg_sp, pres_sp, discharge_sp, water_sp = self.split(sp_points)
 
-        env = PenSimEnv(random_seed_ref=123)
+        env = PenSimEnv(random_seed_ref=self.random_int)
         done = False
         batch_data = env.reset()
         self.init_recipe(Fs_sp, Foil_sp, Fg_sp, pres_sp, discharge_sp, water_sp)
@@ -76,7 +77,7 @@ class RecipeBuilder:
             batch_yield += reward
         return -batch_yield
 
-    def benchmark(self, total_calls, n_calls, n_random_starts):
+    def benchmark(self, total_calls, n_calls, n_random_starts, manup_scale):
         x = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 80,
              22, 30, 35, 34, 33, 32, 31, 30, 29, 23,
              30, 42, 55, 60, 75, 65, 60,
@@ -88,10 +89,10 @@ class RecipeBuilder:
         space = []
 
         while total_calls > 0:
-            print(f"=== running iter {num_iter}")
-            print(f"=== x: {x}")
-            manup_scale = 0.08 * math.exp(-0.27 * num_iter) + 0.02
-            print(f"=== manup_scale: {manup_scale}")
+            # print(f"=== running iter {num_iter}")
+            # print(f"=== x: {x}")
+            # manup_scale = 0.08 * math.exp(-0.27 * num_iter) + 0.02
+            # print(f"=== manup_scale: {manup_scale}")
             total_calls -= n_calls
 
             recipe_Fs_sp, recipe_Foil_sp, recipe_Fg_sp, \
@@ -124,31 +125,31 @@ class RecipeBuilder:
                         space.append(Integer(0, 1))
 
             num_iter += 1
-            print(f"=== space degree: {len(space)}")
-
-            if num_iter == 0:
-                n_random_starts = 15
-
             res_gp = gp_minimize(self.get_batch_yield,
                                  space,
                                  x0=x,
                                  n_calls=n_calls,
                                  n_random_starts=n_random_starts,
-                                 random_state=123,
+                                 random_state=self.random_int,
                                  n_jobs=-1)
-            min_val = 0
-            min_idx = -1
-            for idx, val in enumerate(res_gp.func_vals):
-                if val < min_val:
-                    min_val = val
-                    min_idx = idx
+            # min_val = 0
+            # min_idx = -1
+            # for idx, val in enumerate(res_gp.func_vals):
+            #     if val < min_val:
+            #         min_val = val
+            #         min_idx = idx
 
-            print(res_gp.func_vals)
-            print(f"=== min val is {min_val} & at NO. {min_idx}")
-            print(f"=== corresponding x is: {res_gp.x}")
+            # print(res_gp.func_vals)
+            # print(f"=== min val is {min_val} & at NO. {min_idx}")
+            # print(f"=== corresponding x is: {res_gp.x}")
             print(f"=== mean is {np.mean(res_gp.func_vals)}")
             x = res_gp.x
 
+        return res_gp.func_vals.tolist()
 
+
+yields = []
 recipe_builder = RecipeBuilder()
-recipe_builder.benchmark(total_calls=100, n_calls=20, n_random_starts=1)
+yields.extend(recipe_builder.benchmark(total_calls=5, n_calls=5, n_random_starts=4, manup_scale=0.1))
+yields.extend(recipe_builder.benchmark(total_calls=5, n_calls=5, n_random_starts=4, manup_scale=0.1))
+print(yields)
