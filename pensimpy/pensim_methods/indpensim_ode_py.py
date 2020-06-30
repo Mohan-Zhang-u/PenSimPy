@@ -1,7 +1,6 @@
-import math
+import sympy
 
-
-def indpensim_ode_py(t, y, par):
+def indpensim_ode_py(t, y, par, b):
     """
     ODE for penicillin proecss
     :param t: time span
@@ -128,7 +127,6 @@ def indpensim_ode_py(t, y, par):
     Fa = par[112]
     step1 = par[113]
     Fw = par[114]
-    Fw = 0 if Fw < 0 else Fw
     pressure = par[115]
     # Viscosity flag
     viscosity = y[9] if par[130] == 0 else par[116]
@@ -176,7 +174,7 @@ def indpensim_ode_py(t, y, par):
     # Calculating log mean pressure of vessel
     pressure_bottom = 1 + pressure + pho_b * h_b * 9.81e-5
     pressure_top = 1 + pressure
-    total_pressure = (pressure_bottom - pressure_top) / (math.log(pressure_bottom / pressure_top))
+    total_pressure = (pressure_bottom - pressure_top) / (sympy.log(pressure_bottom / pressure_top))
 
     # Ensuring minimum value for viscosity
     viscosity = 1 if viscosity < 4 else viscosity
@@ -197,31 +195,31 @@ def indpensim_ode_py(t, y, par):
     if inhib_flag == 1:
         pH_inhib = (1 / (1 + (y[6] / K1) + (K2 / y[6])))
         NH3_inhib = 1
-        T_inhib = (k_g * math.exp(-(Eg / (R * y[7]))) - k_d * math.exp(-(Ed / (R * y[7])))) * 0 + 1
+        T_inhib = (k_g * sympy.exp(-(Eg / (R * y[7]))) - k_d * sympy.exp(-(Ed / (R * y[7])))) * 0 + 1
         CO2_inhib = 1
-        DO_2_inhib_X = 0.5 * (1 - math.tanh(A_inhib * (X_crit_DO2 * ((total_pressure * O_2_in) / Henrys_c) - y[1])))
-        DO_2_inhib_P = 0.5 * (1 - math.tanh(A_inhib * (P_crit_DO2 * ((total_pressure * O_2_in) / Henrys_c) - y[1])))
+        DO_2_inhib_X = 0.5 * (1 - sympy.tanh(A_inhib * (X_crit_DO2 * ((total_pressure * O_2_in) / Henrys_c) - y[1])))
+        DO_2_inhib_P = 0.5 * (1 - sympy.tanh(A_inhib * (P_crit_DO2 * ((total_pressure * O_2_in) / Henrys_c) - y[1])))
         PAA_inhib_X = 1
         PAA_inhib_P = 1
-        pH = -math.log10(y[6])
-        mu_h = math.exp((B_1 + B_2 * pH + B_3 * y[7] + B_4 * (pH ** 2)) + B_5 * (y[7] ** 2))
+        pH = -sympy.log10(y[6])
+        mu_h = sympy.exp((B_1 + B_2 * pH + B_3 * y[7] + B_4 * (pH ** 2)) + B_5 * (y[7] ** 2))
 
     if inhib_flag == 2:
         pH_inhib = 1 / (1 + (y[6] / K1) + (K2 / y[6]))
-        NH3_inhib = 0.5 * (1 - math.tanh(A_inhib * (X_crit_N - y[30])))
-        T_inhib = k_g * math.exp(-(Eg / (R * y[7]))) - k_d * math.exp(-(Ed / (R * y[7])))
-        CO2_inhib = 0.5 * (1 + math.tanh(A_inhib * (X_crit_CO2 - y[28] * 1000)))
-        DO_2_inhib_X = 0.5 * (1 - math.tanh(A_inhib * (X_crit_DO2 * ((total_pressure * O_2_in) / Henrys_c) - y[1])))
-        DO_2_inhib_P = 0.5 * (1 - math.tanh(A_inhib * (P_crit_DO2 * ((total_pressure * O_2_in) / Henrys_c) - y[1])))
-        PAA_inhib_X = 0.5 * (1 + (math.tanh((X_crit_PAA - y[29]))))
-        PAA_inhib_P = 0.5 * (1 + (math.tanh((-P_crit_PAA + y[29]))))
-        pH = -math.log10(y[6])
-        mu_h = math.exp((B_1 + B_2 * pH + B_3 * y[7] + B_4 * (pH ** 2)) + B_5 * (y[7] ** 2))
+        NH3_inhib = 0.5 * (1 - sympy.tanh(A_inhib * (X_crit_N - y[30])))
+        T_inhib = k_g * sympy.exp(-(Eg / (R * y[7]))) - k_d * sympy.exp(-(Ed / (R * y[7])))
+        CO2_inhib = 0.5 * (1 + sympy.tanh(A_inhib * (X_crit_CO2 - y[28] * 1000)))
+        DO_2_inhib_X = 0.5 * (1 - sympy.tanh(A_inhib * (X_crit_DO2 * ((total_pressure * O_2_in) / Henrys_c) - y[1])))
+        DO_2_inhib_P = 0.5 * (1 - sympy.tanh(A_inhib * (P_crit_DO2 * ((total_pressure * O_2_in) / Henrys_c) - y[1])))
+        PAA_inhib_X = 0.5 * (1 + (sympy.tanh((X_crit_PAA - y[29]))))
+        PAA_inhib_P = 0.5 * (1 + (sympy.tanh((-P_crit_PAA + y[29]))))
+        pH = -sympy.log10(y[6])
+        mu_h = sympy.exp((B_1 + B_2 * pH + B_3 * y[7] + B_4 * (pH ** 2)) + B_5 * (y[7] ** 2))
 
     # Main rate equations for kinetic expressions
     # Penicillin inhibition curve
     P_inhib = 2.5 * P_std_dev * (
-            (P_std_dev * 2.5066282746310002) ** -1 * math.exp(-0.5 * ((s - mean_P) / P_std_dev) ** 2))
+            (P_std_dev * 2.5066282746310002) ** -1 * sympy.exp(-0.5 * ((s - mean_P) / P_std_dev) ** 2))
 
     # Specific growth rates of biomass regions with inhibition effect
     mu_a0 = ratio_mu_e_mu_b * mux_max * pH_inhib * NH3_inhib * T_inhib * DO_2_inhib_X * CO2_inhib * PAA_inhib_X
@@ -305,7 +303,7 @@ def indpensim_ode_py(t, y, par):
     dphi_0_dt = ((mu_v * v_a1) / (K_v + s)) - k_v * y[15] * (3.141592653589793 * (r_0 + delta_0) ** 3) / 6
 
     # Volume and Weight expressions
-    F_evp = y[4] * alpha_evp * (math.exp(2.5 * (y[7] - T0) / (Tv - T0)) - 1)
+    F_evp = y[4] * alpha_evp * (sympy.exp(2.5 * (y[7] - T0) / (Tv - T0)) - 1)
     pho_feed = (c_s / 1000 * pho_g + (1 - c_s / 1000) * pho_w)
 
     # Dilution term
@@ -370,7 +368,7 @@ def indpensim_ode_py(t, y, par):
     T = y[7]
     V = y[4]
     V_m = y[4] / 1000
-    P_air = ((V_s * R * T * V_m / (22.4 * h_b)) * math.log(1 + pho_b * 9.81 * h_b / (pressure_top * 1e5)))
+    P_air = ((V_s * R * T * V_m / (22.4 * h_b)) * sympy.log(1 + pho_b * 9.81 * h_b / (pressure_top * 1e5)))
     P_t1 = (variable_power + P_air)
     viscosity = 1 if viscosity <= 4 else viscosity
     vis_scaled = viscosity / 100
@@ -397,7 +395,7 @@ def indpensim_ode_py(t, y, par):
 
     # pH
     pH_dis = Fs + Foil + Fb + Fa + F_discharge + Fw
-    if -math.log10(y[6]) < 7:
+    if -sympy.log10(y[6]) < 7:
         cb = -abc
         ca = abc
         pH_balance = 0
@@ -433,7 +431,7 @@ def indpensim_ode_py(t, y, par):
     dy[8] = dQ_dt
 
     # Viscosity
-    dy[9] = 3 * (a_0 ** (1 / 3)) * (1 / (1 + math.exp(-k1 * (t - t1)))) * (1 / (1 + math.exp(-k2 * (t - t2)))) - k3 * Fw
+    dy[9] = 3 * (a_0 ** (1 / 3)) * (1 / (1 + sympy.exp(-k1 * (t - t1)))) * (1 / (1 + sympy.exp(-k2 * (t - t2)))) - k3 * Fw
 
     # Total X
     dy[10] = y[11] + y[12] + y[13] + y[14]
@@ -464,7 +462,7 @@ def indpensim_ode_py(t, y, par):
     dy[27] = (117857.14285714287 * Fg * C_CO2_in + CER - 117857.14285714287 * Fg * y[27]) / (Vg * 1293.3035714285716)
 
     # dissolved CO_2
-    Henrys_c_co2 = (math.exp(11.25 - 395.9 / (y[7] - 175.9))) / 4400
+    Henrys_c_co2 = (sympy.exp(11.25 - 395.9 / (y[7] - 175.9))) / 4400
     C_star_CO2 = (total_pressure * y[27]) / Henrys_c_co2
     dy[28] = kla * delta_c_0 * (C_star_CO2 - y[28]) - y[28] * dilution / y[4]
 

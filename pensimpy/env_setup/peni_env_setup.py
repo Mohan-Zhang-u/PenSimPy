@@ -17,7 +17,8 @@ from pensimpy.pensim_methods.indpensim_ode_py import indpensim_ode_py
 from pensimpy.helper.PIDSimple3 import PIDSimple3
 from pensimpy.helper.smooth_py import smooth_py
 from pensimpy.helper.get_observation_data import get_observation_data
-
+# from pyodeint import
+from pyodesys.symbolic import SymbolicSys
 
 class PenSimEnv:
     def __init__(self, random_seed_ref):
@@ -209,8 +210,13 @@ class PenSimEnv:
         par = self.param_list.copy()
         par.extend(u00)
 
-        # todo
-        y_sol = odeint(indpensim_ode_py, x00, t_span, tfirst=True, args=(par,))
+        # updates
+        if par[114] < 0:
+            par[114] = 0
+
+        self.odesys = SymbolicSys.from_callback(indpensim_ode_py, 64, 131)
+        _, y_sol, _ = self.odesys.integrate(t_span, x00, params=(par,), integrator='odeint')
+
         y_sol = y_sol[-1]
         t_tmp = t_span[-1]
 
