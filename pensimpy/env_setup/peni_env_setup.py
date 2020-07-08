@@ -10,13 +10,13 @@ from pensimpy.pensim_classes.Constants import raman_spectra
 from pensimpy.pensim_classes.Constants import raman_wavenumber
 from pensimpy.pensim_classes.U import U
 
-from pensimpy.pensim_methods.parameter_list import parameter_list
 from pensimpy.pensim_methods.create_batch import create_batch
 from pensimpy.pensim_methods.indpensim_ode_py import indpensim_ode_py
 
 from pensimpy.helper.PIDSimple3 import PIDSimple3
 from pensimpy.helper.smooth_py import smooth_py
 from pensimpy.helper.get_observation_data import get_observation_data
+import fastodeint
 
 
 class PenSimEnv:
@@ -61,7 +61,8 @@ class PenSimEnv:
                                np.arange(0, self.batch_length + self.time_step, self.time_step))
 
         # param list
-        self.param_list = parameter_list(self.x0.mup, self.x0.mux, alpha_kla, N_conc_paa, PAA_c)
+        # self.param_list = parameter_list(self.x0.mup, self.x0.mux, alpha_kla, N_conc_paa, PAA_c)
+        self.param_list = [self.x0.mup, self.x0.mux, alpha_kla, N_conc_paa, PAA_c]
 
         # create the observation class
         x = create_batch(self.time_step, self.batch_length)
@@ -75,7 +76,7 @@ class PenSimEnv:
         Simulate the fermentation process by solving ODE
         """
         # simulation timing init
-        h_ode = self.time_step / 20
+        h_ode = self.time_step / 40
         t = np.arange(0, self.batch_length + self.time_step, self.time_step)
 
         # fills the batch with just the initial conditions so the control system
@@ -209,12 +210,10 @@ class PenSimEnv:
         par = self.param_list.copy()
         par.extend(u00)
 
-        # todo
-        y_sol = odeint(indpensim_ode_py, x00, t_span, tfirst=True, args=(par,))
-        y_sol = y_sol[-1]
-        t_tmp = t_span[-1]
+        y_sol = fastodeint.integrate(x00, par, t_start, t_end + h_ode, h_ode)
+        t_tmp = t_end + h_ode
 
-        # Defining minimum value for all variables for numerical stability
+        # # Defining minimum value for all variables for numerical stability
         y_sol[0:31] = [0.001 if ele <= 0 else ele for ele in y_sol[0:31]]
 
         # Saving all manipulated variables
