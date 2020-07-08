@@ -65,7 +65,7 @@ class RecipeBuilder:
 
         env = PenSimEnv(random_seed_ref=self.random_int)
         done = False
-        batch_data = env.reset()
+        observation, batch_data = env.reset()
         self.init_recipe(Fs_sp, Foil_sp, Fg_sp, pres_sp, discharge_sp, water_sp)
         time_stamp, batch_yield, yield_pre = 0, 0, 0
         while not done:
@@ -173,6 +173,6 @@ class RecipeBuilder:
 
 yields, recipes = [], []
 recipe_builder = RecipeBuilder(random_int=274)
-yields, recipes = recipe_builder.benchmark(total_calls=100, n_calls=100, n_random_starts=1, manup_scale=0.1)
+yields, recipes = recipe_builder.benchmark(total_calls=50, n_calls=50, n_random_starts=1, manup_scale=0.1)
 print(yields)
 print(recipes)
