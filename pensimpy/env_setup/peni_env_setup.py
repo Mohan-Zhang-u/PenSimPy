@@ -18,9 +18,8 @@ from pensimpy.helper.smooth_py import smooth_py
 from pensimpy.helper.get_observation_data import get_observation_data
 import fastodeint
 
-
 class PenSimEnv:
-    def __init__(self, random_seed_ref):
+    def __init__(self, random_seed_ref, fast=True):
         self.xinterp = None
         self.x0 = None
         self.param_list = None
@@ -29,6 +28,7 @@ class PenSimEnv:
         self.random_seed_ref = random_seed_ref
         self.time_step = 0.2  # [hour]
         self.batch_length = 230  # [hour]
+        self.fast = fast
 
     def reset(self):
         """
@@ -210,8 +210,13 @@ class PenSimEnv:
         par = self.param_list.copy()
         par.extend(u00)
 
-        y_sol = fastodeint.integrate(x00, par, t_start, t_end + h_ode, h_ode)
-        t_tmp = t_end + h_ode
+        if self.fast:
+            y_sol = fastodeint.integrate(x00, par, t_start, t_end + h_ode, h_ode)
+            t_tmp = t_end + h_ode
+        else:
+            y_sol = odeint(indpensim_ode_py, x00, t_span, tfirst=True, args=(par,))
+            y_sol = y_sol[-1]
+            t_tmp = t_span[-1]
 
         # # Defining minimum value for all variables for numerical stability
         y_sol[0:31] = [0.001 if ele <= 0 else ele for ele in y_sol[0:31]]
