@@ -24,7 +24,6 @@ if __name__ == "__main__":
     env = PenSimEnv(random_seed_ref=274)
     done = False
     observation, batch_data = env.reset()
-    recipe = Recipe()
 
     # default
     # x = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 80,
