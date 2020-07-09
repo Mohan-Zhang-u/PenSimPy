@@ -369,8 +369,6 @@ class PenSimEnv:
             x.X_offline.y[k - 1] = float('nan')
             x.X_offline.t[k - 1] = float('nan')
 
-        x.V.y[k - 1] = np.nan_to_num(x.V.y[k - 1])
-        x.P.y[k - 1] = np.nan_to_num(x.P.y[k - 1])
         peni_yield = x.V.y[k - 1] * x.P.y[k - 1] / 1000
         # peni_yield is accumulated penicillin
         # yield_pre is previous yield
