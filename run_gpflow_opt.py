@@ -5,6 +5,9 @@ import numpy as np
 
 data = np.load('airline.npz')
 X_train, Y_train = data['X_train'], data['Y_train']
+
+print(f" === X_train: {X_train.shape}")
+print(f" === Y_train: {Y_train.shape}")
 D = Y_train.shape[1]
 
 fig = plt.figure()
@@ -41,6 +44,8 @@ def create_model(hypers):
 
 
 X_test, X_complete = data['X_test'], data['X_complete']
+print(f" === X_test: {X_test.shape}")
+print(f" === X_complete: {X_complete.shape}")
 
 
 def plotprediction(m):
@@ -57,15 +62,16 @@ def plotprediction(m):
     ax.plot(X_complete.flatten(), mu.flatten(), c='g')
     lower = mu - 2 * np.sqrt(var)
     upper = mu + 2 * np.sqrt(var)
-    ax.plot(X_complete, upper, 'g--', X_complete, lower, 'g--', lw=1.2)
+    ax.plot(X_complete, upper, 'r--', X_complete, lower, 'g--', lw=1.2)
     ax.fill_between(X_complete.flatten(), lower.flatten(), upper.flatten(),
-                    color='g', alpha=.1)
+                    color='k', alpha=.1)
     plt.tight_layout()
 
 
-m = create_model(np.ones((2 * Q,)))
-m.optimize(maxiter=max_iters)
-plotprediction(m)
+# m = create_model(np.ones((2 * Q,)))
+# m.optimize(maxiter=max_iters)
+# plotprediction(m)
+# plt.show()
 
 from gpflowopt.domain import ContinuousParameter
 from gpflowopt.objective import batch_apply
@@ -93,11 +99,17 @@ def objectivefx(freq):
 lower = [0.] * Q
 upper = [5.] * int(Q)
 df = np.sum([ContinuousParameter('freq{0}'.format(i), l, u) for i, l, u in zip(range(Q), lower, upper)])
+print(vars(df[0]))
 
 lower = [1e-5] * Q
 upper = [300] * int(Q)
 dl = np.sum([ContinuousParameter('l{0}'.format(i), l, u) for i, l, u in zip(range(Q), lower, upper)])
 domain = df + dl
+print('=== === ===')
+print(vars(dl[0]))
+print('=== === ===')
+print(vars(domain))
+exit()
 
 from gpflowopt.design import LatinHyperCube
 from gpflowopt.acquisition import ExpectedImprovement
@@ -119,7 +131,7 @@ m.optimize()
 plotprediction(m)
 
 f, axes = plt.subplots(1, 1, figsize=(7, 5))
-f = ei.data[1][:,0]
+f = ei.data[1][:, 0]
 axes.plot(np.arange(0, ei.data[0].shape[0]), np.minimum.accumulate(f))
 axes.set_ylabel('fmin')
 axes.set_xlabel('Number of evaluated points')
