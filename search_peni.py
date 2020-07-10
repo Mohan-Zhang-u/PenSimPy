@@ -137,10 +137,13 @@ class RecipeBuilder:
         lower = [ele * 0.9 if ele != 0 else ele for ele in x]
         upper = [ele * 1.1 if ele != 0 else 1 for ele in x]
         domain = np.sum([ContinuousParameter('x{0}'.format(i), l, u) for i, l, u in zip(range(len(x)), lower, upper)])
-        design = RandomDesign(75, domain)
+        design = RandomDesign(10, domain)
         X = design.generate()
         print(f"==== X: {X}")
         print(f"==== X: {len(X)}")
+
+        domain1 = np.sum([ContinuousParameter('y{0}'.format(i), l, u) for i, l, u in zip(range(len(x)), x, x)])
+        x0 = RandomDesign(1, domain1)
 
         Y = self.get_batch_yield_gpflow(X)
 
@@ -154,9 +157,9 @@ class RecipeBuilder:
         acqopt = SciPyOptimizer(domain)
 
         # Now create the Bayesian Optimizer
-        optimizer = BayesianOptimizer(domain, alpha, optimizer=acqopt)
-        with optimizer.silent():
-            r = optimizer.optimize(self.get_batch_yield_gpflow, n_iter=5)
+        optimizer = BayesianOptimizer(domain, alpha, optimizer=acqopt, initial=x0, verbose=True)
+        #with optimizer.silent():
+        r = optimizer.optimize(self.get_batch_yield_gpflow, n_iter=10)
         print(r)
 
     def benchmark(self, total_calls, n_calls, n_random_starts, manup_scale):
