@@ -1,0 +1,27 @@
+{
+    "language"        : "PYTHON",
+    "main-file"       : "myfunc.py",
+    "experiment-name" : "simple-example",
+    "likelihood"      : "gaussian",
+    "resources": {
+        "maximum-iterations" :  1,
+        "max-run-time": "NA"
+    },
+    "variables" : {
+        "y" : {
+            "type" : "FLOAT",
+            "size" : 1,
+            "min"  : -3,
+            "max"  : 3
+        },
+        "x" : {
+            "type" : "FLOAT",
+            "size" : 1,
+            "min"  : -2,
+            "max"  : 2
+        }
+    },
+    "output":{
+        "verbosity": true
+    }
+}

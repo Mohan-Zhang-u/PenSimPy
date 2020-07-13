@@ -5,12 +5,14 @@ from random import random, seed
 from skopt import gp_minimize
 from skopt.space import Real, Integer
 import math
-from gpflowopt.domain import ContinuousParameter
-from gpflowopt.design import LatinHyperCube, FactorialDesign, RandomDesign
-from gpflowopt.bo import BayesianOptimizer
-from gpflowopt.acquisition import ExpectedImprovement
-import gpflow
-from gpflowopt.optim import SciPyOptimizer
+
+
+# from gpflowopt.domain import ContinuousParameter
+# from gpflowopt.design import LatinHyperCube, FactorialDesign, RandomDesign
+# from gpflowopt.bo import BayesianOptimizer
+# from gpflowopt.acquisition import ExpectedImprovement
+# import gpflow
+# from gpflowopt.optim import SciPyOptimizer
 
 
 class RecipeBuilder:
@@ -126,6 +128,55 @@ class RecipeBuilder:
 
         return lower_bound_new, upper_bound_new
 
+    def botorch(self):
+        import torch
+        from botorch.models import SingleTaskGP
+        from botorch.fit import fit_gpytorch_model
+        from gpytorch.mlls import ExactMarginalLogLikelihood
+
+        x = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 80,
+             22, 30, 35, 34, 33, 32, 31, 30, 29, 23,
+             30, 42, 55, 60, 75, 65, 60,
+             0.6, 0.7, 0.8, 0.9, 1.1, 1, 0.9, 0.9,
+             0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 0,
+             0, 500, 100, 0, 400, 150, 250, 0, 100]
+
+        X = []
+        for _ in range(10):
+            tmp = [ele * (1 + np.random.randint(-10, 10) / 100) for ele in x]
+            X.append(tmp)
+
+        train_X = torch.FloatTensor(X)
+        print(f"=== train_X: {train_X.shape}")
+
+        Y = self.get_batch_yield_gpflow(train_X)
+        train_Y = torch.FloatTensor(Y)
+
+        print(f"=== train_Y: {train_Y.shape}")
+        gp = SingleTaskGP(train_X, train_Y)
+        # mll = ExactMarginalLogLikelihood(gp.likelihood, gp)
+        # fit_gpytorch_model(mll)
+
+        from botorch.acquisition import UpperConfidenceBound
+
+        UCB = UpperConfidenceBound(gp, beta=0.1)
+
+        from botorch.optim import optimize_acqf
+
+        lower = [ele * 0.9 if ele != 0 else ele for ele in x]
+        upper = [ele * 1.1 if ele != 0 else 1 for ele in x]
+
+        bounds = torch.stack([torch.FloatTensor(lower), torch.FloatTensor(upper)])
+        candidate, acq_value = optimize_acqf(
+            UCB, bounds=bounds, q=1, num_restarts=5, raw_samples=20,
+        )
+
+        print(f"=== candidate: {candidate}")
+        print(f"=== acq_value: {acq_value}")
+        print(f"=== actual yield: {self.get_batch_yield_gpflow(candidate)}")
+
+
+
     def gpflow_opt(self):
         # default
         x = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 80,
@@ -158,7 +209,7 @@ class RecipeBuilder:
 
         # Now create the Bayesian Optimizer
         optimizer = BayesianOptimizer(domain, alpha, optimizer=acqopt, initial=x0, verbose=True)
-        #with optimizer.silent():
+        # with optimizer.silent():
         r = optimizer.optimize(self.get_batch_yield_gpflow, n_iter=10)
         print(r)
 
@@ -258,8 +309,8 @@ class RecipeBuilder:
 
 yields, recipes = [], []
 recipe_builder = RecipeBuilder(random_int=274)
-# yields, recipes = recipe_builder.benchmark(total_calls=50, n_calls=50, n_random_starts=1, manup_scale=0.1)
+# yields, recipes = recipe_builder.benchmark(total_calls=5, n_calls=5, n_random_starts=1, manup_scale=0.1)
 # print(yields)
 # print(recipes)
 
-recipe_builder.gpflow_opt()
+recipe_builder.botorch()
