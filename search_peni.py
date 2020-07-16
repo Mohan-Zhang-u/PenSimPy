@@ -5,14 +5,22 @@ from random import random, seed
 from skopt import gp_minimize
 from skopt.space import Real, Integer
 import math
-
-
-# from gpflowopt.domain import ContinuousParameter
-# from gpflowopt.design import LatinHyperCube, FactorialDesign, RandomDesign
-# from gpflowopt.bo import BayesianOptimizer
-# from gpflowopt.acquisition import ExpectedImprovement
-# import gpflow
-# from gpflowopt.optim import SciPyOptimizer
+from gpflowopt.domain import ContinuousParameter
+from gpflowopt.design import LatinHyperCube, FactorialDesign, RandomDesign
+from gpflowopt.bo import BayesianOptimizer
+from gpflowopt.acquisition import ExpectedImprovement
+import gpflow
+from gpflowopt.optim import SciPyOptimizer
+import GPy
+import GPyOpt
+from math import log
+import torch
+from botorch.models import SingleTaskGP
+from botorch.fit import fit_gpytorch_model
+from gpytorch.mlls import ExactMarginalLogLikelihood
+import matplotlib.pyplot as plt
+from botorch.acquisition import UpperConfidenceBound
+from botorch.optim import optimize_acqf
 
 
 class RecipeBuilder:
@@ -71,7 +79,8 @@ class RecipeBuilder:
     def get_batch_yield(self, sp_points):
         Fs_sp, Foil_sp, Fg_sp, pres_sp, discharge_sp, water_sp = self.split(sp_points)
 
-        env = PenSimEnv(random_seed_ref=self.random_int)
+        # env = PenSimEnv(random_seed_ref=274)
+        env = PenSimEnv(random_seed_ref=np.random.randint(1000))
         done = False
         observation, batch_data = env.reset()
         self.init_recipe(Fs_sp, Foil_sp, Fg_sp, pres_sp, discharge_sp, water_sp)
@@ -94,10 +103,10 @@ class RecipeBuilder:
              0, 500, 100, 0, 400, 150, 250, 0, 100]
         yields = []
         for i in range(len(X)):
-            # water_sp = X[i].tolist()
-            # Fs_sp, Foil_sp, Fg_sp, pres_sp, discharge_sp, _ = self.split(x)
+            water_sp = X[i].tolist()
+            Fs_sp, Foil_sp, Fg_sp, pres_sp, discharge_sp, _ = self.split(x)
 
-            Fs_sp, Foil_sp, Fg_sp, pres_sp, discharge_sp, water_sp = self.split(X[i].tolist())
+            # Fs_sp, Foil_sp, Fg_sp, pres_sp, discharge_sp, water_sp = self.split(X[i].tolist())
 
             env = PenSimEnv(random_seed_ref=self.random_int)
             done = False
@@ -120,20 +129,54 @@ class RecipeBuilder:
         lower_bound = x - x * manup_scale
         upper_bound = x + x * manup_scale
 
-        lower_bound_new = x_opt - x_opt * manup_scale * 0.2
-        upper_bound_new = x_opt + x_opt * manup_scale * 0.2
+        return lower_bound, upper_bound
 
-        lower_bound_new = lower_bound_new if lower_bound_new > lower_bound else lower_bound
-        upper_bound_new = upper_bound_new if upper_bound_new < upper_bound else upper_bound
+        # lower_bound_new = x_opt - x_opt * manup_scale
+        # upper_bound_new = x_opt + x_opt * manup_scale
+        #
+        # lower_bound_new = lower_bound_new if lower_bound_new > lower_bound else lower_bound
+        # upper_bound_new = upper_bound_new if upper_bound_new < upper_bound else upper_bound
+        #
+        # return lower_bound_new, upper_bound_new
 
-        return lower_bound_new, upper_bound_new
+    def gpyopt(self):
+        # x = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 80,
+        #      22, 30, 35, 34, 33, 32, 31, 30, 29, 23,
+        #      30, 42, 55, 60, 75, 65, 60,
+        #      0.6, 0.7, 0.8, 0.9, 1.1, 1, 0.9, 0.9,
+        #      0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 0,
+        #      0, 500, 100, 0, 400, 150, 250, 0, 100]
+
+        x = [0, 500, 100, 0, 400, 150, 250, 0, 100]
+
+        lower = [ele * 0.9 if ele != 0 else ele for ele in x]
+        upper = [ele * 1.1 if ele != 0 else 1 for ele in x]
+        bounds = []
+        for i in range(len(x)):
+            tmp = {'name': f'x{i}', 'type': 'continuous', 'domain': (lower[i], upper[i])}
+            bounds.append(tmp)
+
+        constraints = [
+            {
+                'name': 'constrain_1',
+                'constraint': '(x[:,0] + x[:,1]) - 23'
+            },
+        ]
+
+        seed(274)
+        myBopt = GPyOpt.methods.BayesianOptimization(f=self.get_batch_yield_gpflow,
+                                                     initial_design_numdata=4,
+                                                     domain=bounds,
+                                                     verbosity=True)
+        myBopt.run_optimization(max_iter=100, eps=-1)
+        print(f"=== x_opt: {myBopt.x_opt}")
+        print(f"=== fx_opt: {myBopt.fx_opt}")
+        # print(f"=== before: {self.get_batch_yield(x)}")
+
+        plt.plot(myBopt.Y.T[0])
+        plt.show()
 
     def botorch(self):
-        import torch
-        from botorch.models import SingleTaskGP
-        from botorch.fit import fit_gpytorch_model
-        from gpytorch.mlls import ExactMarginalLogLikelihood
-
         x = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 80,
              22, 30, 35, 34, 33, 32, 31, 30, 29, 23,
              30, 42, 55, 60, 75, 65, 60,
@@ -154,14 +197,10 @@ class RecipeBuilder:
 
         print(f"=== train_Y: {train_Y.shape}")
         gp = SingleTaskGP(train_X, train_Y)
-        # mll = ExactMarginalLogLikelihood(gp.likelihood, gp)
-        # fit_gpytorch_model(mll)
-
-        from botorch.acquisition import UpperConfidenceBound
+        mll = ExactMarginalLogLikelihood(gp.likelihood, gp)
+        fit_gpytorch_model(mll)
 
         UCB = UpperConfidenceBound(gp, beta=0.1)
-
-        from botorch.optim import optimize_acqf
 
         lower = [ele * 0.9 if ele != 0 else ele for ele in x]
         upper = [ele * 1.1 if ele != 0 else 1 for ele in x]
@@ -174,8 +213,6 @@ class RecipeBuilder:
         print(f"=== candidate: {candidate}")
         print(f"=== acq_value: {acq_value}")
         print(f"=== actual yield: {self.get_batch_yield_gpflow(candidate)}")
-
-
 
     def gpflow_opt(self):
         # default
@@ -264,15 +301,15 @@ class RecipeBuilder:
             if num_iter == 0:
                 for Fs, Fs_opt in zip(recipe_Fs_sp, recipe_Fs_sp_opt):
                     lower_bound, upper_bound = self.get_bound(Fs, Fs_opt, manup_scale)
-                    space.append(Real(lower_bound, upper_bound))
+                    space.append(Integer(int(lower_bound), int(upper_bound)))
 
                 for Foil, Foil_opt in zip(recipe_Foil_sp, recipe_Foil_sp_opt):
                     lower_bound, upper_bound = self.get_bound(Foil, Foil_opt, manup_scale)
-                    space.append(Real(lower_bound, upper_bound))
+                    space.append(Integer(int(lower_bound), int(upper_bound)))
 
                 for Fg, Fg_opt in zip(recipe_Fg_sp, recipe_Fg_sp_opt):
                     lower_bound, upper_bound = self.get_bound(Fg, Fg_opt, manup_scale)
-                    space.append(Real(lower_bound, upper_bound))
+                    space.append(Integer(int(lower_bound), int(upper_bound)))
 
                 for pres, pres_opt in zip(recipe_pres_sp, recipe_pres_sp_opt):
                     lower_bound, upper_bound = self.get_bound(pres, pres_opt, manup_scale)
@@ -281,21 +318,28 @@ class RecipeBuilder:
                 for discharge, discharge_opt in zip(recipe_discharge_sp, recipe_discharge_sp_opt):
                     if discharge != 0:
                         lower_bound, upper_bound = self.get_bound(discharge, discharge_opt, manup_scale)
-                        space.append(Real(lower_bound, upper_bound))
+                        space.append(Integer(int(lower_bound), int(upper_bound)))
                     else:
-                        space.append(Real(0, 0.001))
+                        space.append(Integer(0, 1))
 
                 for water, water_opt in zip(recipe_water_sp, recipe_water_sp_opt):
                     if water != 0:
                         lower_bound, upper_bound = self.get_bound(water, water_opt, manup_scale)
-                        space.append(Real(lower_bound, upper_bound))
+                        space.append(Integer(int(lower_bound), int(upper_bound)))
                     else:
-                        space.append(Real(0, 0.001))
+                        space.append(Integer(0, 1))
 
             num_iter += 1
+            # res_gp = gp_minimize(self.get_batch_yield,
+            #                      space,
+            #                      x0=x0,
+            #                      n_calls=n_calls,
+            #                      n_random_starts=n_random_starts,
+            #                      random_state=np.random.randint(1000),
+            #                      n_jobs=-1)
+
             res_gp = gp_minimize(self.get_batch_yield,
                                  space,
-                                 x0=x0,
                                  n_calls=n_calls,
                                  n_random_starts=n_random_starts,
                                  random_state=np.random.randint(1000),
@@ -308,9 +352,18 @@ class RecipeBuilder:
 
 
 yields, recipes = [], []
-recipe_builder = RecipeBuilder(random_int=274)
-# yields, recipes = recipe_builder.benchmark(total_calls=5, n_calls=5, n_random_starts=1, manup_scale=0.1)
-# print(yields)
-# print(recipes)
+recipe_builder = RecipeBuilder(random_int=None)
+yields, recipes = recipe_builder.benchmark(total_calls=1000, n_calls=1000, n_random_starts=40, manup_scale=0.1)
+print(yields)
+print(recipes)
 
-recipe_builder.botorch()
+# new_yields = [-ele for ele in yields]
+# import matplotlib.pyplot as plt
+# plt.plot(new_yields)
+# # plt.plot([3655]*100)
+# # plt.plot([3368]*100)
+# plt.show()
+
+
+# recipe_builder.botorch()
+# recipe_builder.gpyopt()

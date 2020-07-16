@@ -18,7 +18,8 @@ while not done:
 '''
 
 if __name__ == "__main__":
-    for _ in range(1):
+    yield_records = []
+    for i in range(1000):
         t = time.time()
 
         # Random_seed_ref from 0 to 1000
@@ -48,19 +49,6 @@ if __name__ == "__main__":
 
         # factor = 50
         # x = [ele * (1 + np.random.randint(-factor, factor) / 100) for ele in x]
-        x=[8.5128e+00, 1.4753e+01, 2.7012e+01, 7.2645e+01, 1.6215e+02, 3.2003e+01,
-         3.4296e+01, 4.4724e+01, 4.6899e+01, 5.3336e+01, 5.7991e+01, 5.6412e+01,
-         6.4693e+01, 7.2333e+01, 7.4778e+01, 7.8602e+01, 8.4248e+01, 9.6761e+01,
-         1.0856e+02, 9.1675e+01, 8.0735e+01, 2.0672e+01, 2.8187e+01, 3.3268e+01,
-         3.1547e+01, 3.0898e+01, 2.9639e+01, 3.2776e+01, 3.0342e+01, 3.1445e+01,
-         2.2678e+01, 3.2642e+01, 4.2279e+01, 5.0578e+01, 5.4669e+01, 7.2231e+01,
-         7.0354e+01, 6.5369e+01, 6.1147e-01, 7.3214e-01, 8.1685e-01, 9.0158e-01,
-         1.0082e+00, 9.2417e-01, 9.2030e-01, 8.7813e-01, 5.6046e-01, 3.7452e+03,
-         7.6556e-01, 3.6199e+03, 7.0177e-01, 3.9485e+03, 8.7810e-01, 3.7977e+03,
-         4.4765e-01, 4.0296e+03, 8.9213e-01, 3.9061e+03, 7.5856e-01, 3.7744e+03,
-         1.2147e-01, 4.0060e+03, 8.0914e-01, 3.9105e+03, 3.0228e-01, 5.6220e-02,
-         4.6009e-01, 4.9500e+02, 1.0108e+02, 1.9938e-01, 4.1628e+02, 1.3971e+02,
-         2.6222e+02, 9.6464e-01, 9.2047e+01]
 
         recipe = Recipe(x)
 
@@ -81,17 +69,19 @@ if __name__ == "__main__":
             batch_yield += reward
 
         print(f"=== cost: {int(time.time() - t)} s")
-        print(f"=== batch_yield: {batch_yield}")
+        print(f"=== batch_yield: {batch_yield} @ NO. {i}")
+        yield_records.append(batch_yield)
 
-        # check
-        from pensimpy.pensim_classes.Constants import H
-        import numpy as np
-
-        batch_data.P.y = np.nan_to_num(batch_data.P.y)
-        batch_data.V.y = np.nan_to_num(batch_data.V.y)
-        penicillin_yield_total = (batch_data.V.y[-1] * batch_data.P.y[-1]
-                                  - np.dot(batch_data.Fremoved.y, batch_data.P.y) * H) / 1000
-        print(f"=== penicillin_yield: {penicillin_yield_total}")
+        # # check
+        # from pensimpy.pensim_classes.Constants import H
+        # import numpy as np
+        #
+        # batch_data.P.y = np.nan_to_num(batch_data.P.y)
+        # batch_data.V.y = np.nan_to_num(batch_data.V.y)
+        # penicillin_yield_total = (batch_data.V.y[-1] * batch_data.P.y[-1]
+        #                           - np.dot(batch_data.Fremoved.y, batch_data.P.y) * H) / 1000
+        # print(f"=== penicillin_yield: {penicillin_yield_total}")
 
         # # Plot
         # show_params(batch_data)
+    print(yield_records)
