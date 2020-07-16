@@ -343,7 +343,8 @@ class RecipeBuilder:
                                  n_calls=n_calls,
                                  n_random_starts=n_random_starts,
                                  random_state=np.random.randint(1000),
-                                 n_jobs=-1)
+                                 n_jobs=-1,
+                                 verbose=True)
 
             print(f"=== mean is {np.mean(res_gp.func_vals)}")
             x = res_gp.x
@@ -354,8 +355,18 @@ class RecipeBuilder:
 yields, recipes = [], []
 recipe_builder = RecipeBuilder(random_int=None)
 yields, recipes = recipe_builder.benchmark(total_calls=1000, n_calls=1000, n_random_starts=40, manup_scale=0.1)
-print(yields)
-print(recipes)
+#print(yields)
+#print(recipes)
+
+import pickle
+
+with open('1000_40_rand_seed_yield', 'wb') as fp:
+    pickle.dump(yields, fp)
+
+with open('1000_40_rand_seed_recipe', 'wb') as fp:
+    pickle.dump(recipes, fp)
+
+
 
 # new_yields = [-ele for ele in yields]
 # import matplotlib.pyplot as plt
