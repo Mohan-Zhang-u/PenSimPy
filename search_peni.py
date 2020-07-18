@@ -79,8 +79,8 @@ class RecipeBuilder:
     def get_batch_yield(self, sp_points):
         Fs_sp, Foil_sp, Fg_sp, pres_sp, discharge_sp, water_sp = self.split(sp_points)
 
-        # env = PenSimEnv(random_seed_ref=274)
-        env = PenSimEnv(random_seed_ref=np.random.randint(1000))
+        env = PenSimEnv(random_seed_ref=self.random_int)
+        # env = PenSimEnv(random_seed_ref=np.random.randint(1000))
         done = False
         observation, batch_data = env.reset()
         self.init_recipe(Fs_sp, Foil_sp, Fg_sp, pres_sp, discharge_sp, water_sp)
@@ -129,15 +129,13 @@ class RecipeBuilder:
         lower_bound = x - x * manup_scale
         upper_bound = x + x * manup_scale
 
-        return lower_bound, upper_bound
+        lower_bound_new = x_opt - x_opt * manup_scale
+        upper_bound_new = x_opt + x_opt * manup_scale
 
-        # lower_bound_new = x_opt - x_opt * manup_scale
-        # upper_bound_new = x_opt + x_opt * manup_scale
-        #
-        # lower_bound_new = lower_bound_new if lower_bound_new > lower_bound else lower_bound
-        # upper_bound_new = upper_bound_new if upper_bound_new < upper_bound else upper_bound
-        #
-        # return lower_bound_new, upper_bound_new
+        lower_bound_new = lower_bound_new if lower_bound_new > lower_bound else lower_bound
+        upper_bound_new = upper_bound_new if upper_bound_new < upper_bound else upper_bound
+
+        return lower_bound_new, upper_bound_new
 
     def gpyopt(self):
         # x = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 80,
@@ -259,46 +257,29 @@ class RecipeBuilder:
              0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 0,
              0, 500, 100, 0, 400, 150, 250, 0, 100]
 
-        # top 1
-        # x0 = [8, 15, 31, 76, 144, 32, 39, 44, 44, 48, 53, 57, 60, 79, 82, 74, 87, 96, 105, 99, 88, 23, 30, 37, 32, 34,
-        #       34, 27, 29, 30, 25, 32, 39, 56, 64, 76, 61, 54, 0.5751669730340376, 0.7161287257301532,
-        #       0.7465629211339744, 0.9488068117056693, 1.130591290628027, 1.068799517372909, 0.81, 0.8428951880325852, 1,
-        #       3673, 1, 4158, 1, 4073, 0, 4229, 1, 3821, 1, 3869, 1, 4129, 1, 3906, 1, 4328, 1, 1, 1, 547, 93, 1, 394,
-        #       145, 225, 1, 101]
-        x0 = [8.8, 16.5, 31.624252044238425, 80.13474509247575, 165.0, 30.763382203093368, 40.7, 47.3,
-              48.05716368821474, 55.15358172418276, 51.4398158471111, 61.6493571632683, 65.67022327424863,
-              77.96346763446553, 71.3782077191417, 77.23046926307548, 92.4, 90.79850035453829, 114.03714549578332, 99.0,
-              88.0, 21.96813367025686, 33.0, 38.5, 36.24626215254306, 29.7, 35.2, 28.2419828653085, 27.286406931581023,
-              29.426747426092, 25.3, 32.432773357247996, 40.027278748110305, 50.19868927568485, 66.0, 78.05107828935165,
-              64.45022060032773, 57.95664924901469, 0.56851933895408, 0.7699999999999999, 0.72, 0.8263110434540011,
-              1.1403701584391397, 1.0823399050137648, 0.8481730193616307, 0.9519224931750232, 0.0009510521763949335,
-              3803.1322001216763, 0.0004744015345583332, 4169.273038967871, 0.0007940386276741609, 4245.208859117792,
-              0.0, 3600.0, 0.001, 4193.088586277349, 0.0004293134419313078, 4166.552905585846, 0.0, 3746.7115958942272,
-              0.0, 3806.434973903112, 0.0006842283439804432, 3983.074516003572, 0.00041511053507232776,
-              0.0006349914867663446, 0.0006841858874726173, 453.56974515739904, 100.11317471293015,
-              0.00034233634278272326, 363.3829129190667, 161.6677187701564, 229.2738817253559, 0.000524502413540419,
-              90.58189370332654]
-        # top 5
-        # x0 = [[8, 15, 30, 67, 135, 32, 33, 46, 48, 51, 51, 64, 58, 64, 68, 83, 75, 98, 106, 99, 88, 23, 33, 38, 30, 34, 30, 30, 29, 26, 25, 27, 37, 49, 64, 72, 62, 62, 0.5937612142062656, 0.7369915508687243, 0.8800000000000001, 0.8876627396891, 0.9900000000000001, 1.1, 0.8912359957349242, 0.99, 0, 4400, 1, 4400, 1, 3847, 1, 3600, 0, 4102, 0, 3789, 0, 4400, 1, 4001, 1, 3600, 0, 1, 0, 550, 93, 0, 360, 142, 275, 1, 99], [8, 15, 32, 80, 138, 28, 40, 44, 42, 50, 52, 62, 71, 71, 78, 76, 79, 91, 117, 99, 88, 22, 33, 34, 33, 36, 33, 33, 33, 26, 25, 30, 42, 51, 64, 72, 66, 58, 0.5600260382388, 0.6775755933903049, 0.8360947394917699, 0.873097356580318, 1.1833480885181498, 0.9013045598167755, 0.8381264271897598, 0.8155621834786863, 0, 3933, 1, 4093, 0, 4160, 1, 3999, 0, 3977, 0, 3633, 0, 4056, 1, 4320, 1, 3907, 0, 1, 0, 470, 101, 0, 393, 141, 254, 1, 97], [7, 15, 32, 67, 135, 33, 40, 45, 51, 56, 58, 54, 63, 76, 68, 88, 92, 91, 104, 99, 88, 19, 33, 37, 37, 29, 32, 33, 31, 27, 25, 33, 46, 49, 66, 82, 61, 54, 0.5887538683908805, 0.7699999999999999, 0.79869450478647, 0.9129025907063256, 1.176962859932942, 1.1, 0.99, 0.99, 0, 3799, 1, 3600, 1, 4359, 0, 3987, 1, 4164, 0, 4400, 1, 4400, 0, 4238, 1, 3600, 0, 1, 1, 550, 102, 0, 417, 164, 225, 1, 90], [8, 14, 27, 77, 165, 29, 40, 40, 44, 56, 58, 65, 61, 69, 83, 80, 92, 99, 106, 99, 88, 20, 28, 36, 30, 33, 35, 28, 33, 28, 25, 27, 46, 54, 66, 82, 71, 55, 0.6599999999999999, 0.63, 0.8800000000000001, 0.8321717898263531, 1.1044391884714464, 0.9, 0.8521349624603344, 0.81, 1, 3778, 1, 3978, 1, 4036, 0, 3842, 0, 4400, 1, 3777, 1, 4203, 0, 3801, 0, 4400, 1, 1, 0, 462, 110, 1, 367, 141, 275, 1, 109], [8, 15, 31, 76, 144, 32, 39, 44, 44, 48, 53, 57, 60, 79, 82, 74, 87, 96, 105, 99, 88, 23, 30, 37, 32, 34, 34, 27, 29, 30, 25, 32, 39, 56, 64, 76, 61, 54, 0.5751669730340376, 0.7161287257301532, 0.7465629211339744, 0.9488068117056693, 1.130591290628027, 1.068799517372909, 0.81, 0.8428951880325852, 1, 3673, 1, 4158, 1, 4073, 0, 4229, 1, 3821, 1, 3869, 1, 4129, 1, 3906, 1, 4328, 1, 1, 1, 547, 93, 1, 394, 145, 225, 1, 101]]
+        x0 = [8, 16, 27, 70, 145, 32, 34, 38, 45, 53, 57, 55, 61, 72, 81, 86, 76, 84, 119, 99,
+              87, 21, 29, 36, 30, 35, 34, 34, 31, 27, 25,
+              31, 46, 49, 66, 81, 67, 66,
+              0.6006477795120947, 0.662649715237619, 0.8400327687015882, 0.9184041217051334, 1.1103892968816163, 1.0352994970737246, 0.9182184239159428, 0.9006338441224637,
+              0, 4155, 1, 3948, 1, 4368, 0, 3816, 1, 4036, 1, 4253, 0, 3600, 1, 3704, 1, 4307, 1, 1,
+              1, 515, 91, 0, 392, 163, 235, 0, 102]
 
         num_iter = 0
 
         space = []
+        yields_summary = []
+        recipe_summary = []
 
         while total_calls > 0:
-            # print(f"=== running iter {num_iter}")
-            # print(f"=== x: {x}")
-            # manup_scale = 0.08 * math.exp(-0.27 * num_iter) + 0.02
-            # print(f"=== manup_scale: {manup_scale}")
-            total_calls -= n_calls
-
-            recipe_Fs_sp, recipe_Foil_sp, recipe_Fg_sp, \
-            recipe_pres_sp, recipe_discharge_sp, recipe_water_sp = self.split(x)
-
-            recipe_Fs_sp_opt, recipe_Foil_sp_opt, recipe_Fg_sp_opt, \
-            recipe_pres_sp_opt, recipe_discharge_sp_opt, recipe_water_sp_opt = self.split(x0)
+            print(f"=== === running iter @ {num_iter} with seed {self.random_int}")
 
             if num_iter == 0:
+                recipe_Fs_sp, recipe_Foil_sp, recipe_Fg_sp, \
+                recipe_pres_sp, recipe_discharge_sp, recipe_water_sp = self.split(x)
+
+                recipe_Fs_sp_opt, recipe_Foil_sp_opt, recipe_Fg_sp_opt, \
+                recipe_pres_sp_opt, recipe_discharge_sp_opt, recipe_water_sp_opt = self.split(x0)
+
                 for Fs, Fs_opt in zip(recipe_Fs_sp, recipe_Fs_sp_opt):
                     lower_bound, upper_bound = self.get_bound(Fs, Fs_opt, manup_scale)
                     space.append(Integer(int(lower_bound), int(upper_bound)))
@@ -329,52 +310,97 @@ class RecipeBuilder:
                     else:
                         space.append(Integer(0, 1))
 
-            num_iter += 1
-            # res_gp = gp_minimize(self.get_batch_yield,
-            #                      space,
-            #                      x0=x0,
-            #                      n_calls=n_calls,
-            #                      n_random_starts=n_random_starts,
-            #                      random_state=np.random.randint(1000),
-            #                      n_jobs=-1)
+            # if num_iter == 0:
+            #     res_gp = gp_minimize(self.get_batch_yield,
+            #                          space,
+            #                          n_calls=n_calls,
+            #                          n_random_starts=n_random_starts,
+            #                          random_state=np.random.randint(1000),
+            #                          n_jobs=-1,
+            #                          verbose=True)
+            # else:
+            #     res_gp = gp_minimize(self.get_batch_yield,
+            #                          space,
+            #                          x0=x0,
+            #                          n_calls=n_calls,
+            #                          n_random_starts=n_random_starts,
+            #                          random_state=np.random.randint(1000),
+            #                          n_jobs=-1,
+            #                          verbose=True)
 
             res_gp = gp_minimize(self.get_batch_yield,
                                  space,
+                                 x0=x0,
                                  n_calls=n_calls,
                                  n_random_starts=n_random_starts,
                                  random_state=np.random.randint(1000),
-                                 n_jobs=-1,
-                                 verbose=True)
+                                 n_jobs=-1)
 
-            print(f"=== mean is {np.mean(res_gp.func_vals)}")
-            x = res_gp.x
+            num_iter += 1
+            total_calls -= n_calls
+            x0 = res_gp.x
+            yields_summary.extend(res_gp.func_vals.tolist())
+            recipe_summary.extend(res_gp.x_iters)
 
-        return res_gp.func_vals.tolist(), res_gp.x_iters
-
-
-yields, recipes = [], []
-recipe_builder = RecipeBuilder(random_int=None)
-yields, recipes = recipe_builder.benchmark(total_calls=1000, n_calls=1000, n_random_starts=40, manup_scale=0.1)
-#print(yields)
-#print(recipes)
-
-import pickle
-
-with open('1000_40_rand_seed_yield', 'wb') as fp:
-    pickle.dump(yields, fp)
-
-with open('1000_40_rand_seed_recipe', 'wb') as fp:
-    pickle.dump(recipes, fp)
+        return yields_summary, recipe_summary
 
 
+for seed in range(1, 101):
+    recipe_builder = RecipeBuilder(random_int=seed)
+    yields, recipes = recipe_builder.benchmark(total_calls=100, n_calls=100, n_random_starts=4, manup_scale=0.1)
+    print(len(yields))
+    print(len(recipes))
+    print(yields)
 
+    # import matplotlib.pyplot as plt
+    #
+    # new_yields = [-ele for ele in yields]
+    #
+    # import numpy as np
+    #
+    # print(np.mean(new_yields))
+    # print(np.std(new_yields))
+    # print(np.min(new_yields))
+    # print(np.max(new_yields))
+    #
+    # plt.plot(new_yields)
+    # plt.show()
+
+    import pickle
+
+    with open(f'100_4_seed_{seed}_yield', 'wb') as fp:
+        pickle.dump(yields, fp)
+
+    with open(f'100_4_seed_{seed}_recipe', 'wb') as fp:
+        pickle.dump(recipes, fp)
+
+# import pickle
+#
+# with open('1000_100_1_seed_1_yield', 'rb') as fp:
+#     yields = pickle.load(fp)
+#
+# with open('1000_100_1_seed_1_recipe', 'rb') as fp:
+#     recipe = pickle.load(fp)
+#
 # new_yields = [-ele for ele in yields]
+# # print(max(new_yields))
+# # print(new_yields.index((max(new_yields))))
+# # print(recipe[new_yields.index((max(new_yields)))])
+# #
+# # top_1_recipe = [8, 16, 27, 70, 145, 32, 34, 38, 45, 53, 57, 55, 61, 72, 81, 86, 76, 84, 119, 99, 87, 21, 29, 36, 30, 35,
+# #                 34, 34, 31, 27, 25, 31, 46, 49, 66, 81, 67, 66, 0.6006477795120947, 0.662649715237619,
+# #                 0.8400327687015882, 0.9184041217051334, 1.1103892968816163, 1.0352994970737246, 0.9182184239159428,
+# #                 0.9006338441224637, 0, 4155, 1, 3948, 1, 4368, 0, 3816, 1, 4036, 1, 4253, 0, 3600, 1, 3704, 1, 4307, 1,
+# #                 1, 1, 515, 91, 0, 392, 163, 235, 0, 102]
+#
 # import matplotlib.pyplot as plt
 # plt.plot(new_yields)
-# # plt.plot([3655]*100)
-# # plt.plot([3368]*100)
 # plt.show()
-
+# import numpy as np
+# print(np.mean(new_yields))
+# print(np.std(new_yields))
+# print(np.min(new_yields))
+# print(np.max(new_yields))
 
 # recipe_builder.botorch()
 # recipe_builder.gpyopt()
