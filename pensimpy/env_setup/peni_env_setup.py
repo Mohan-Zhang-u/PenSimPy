@@ -36,6 +36,7 @@ class PenSimEnv:
         """
         # Enbaling seed for repeatable random numbers for different batches
         seed_ref = 31 + self.random_seed_ref
+        np.random.seed(seed_ref)
         intial_conds = 0.5 + 0.05 * np.random.randn(1)[0]
 
         # create x0

@@ -1,26 +1,8 @@
 from pensimpy.helper.get_recipe_trend import get_recipe_trend
 from pensimpy.env_setup.peni_env_setup import PenSimEnv
 import numpy as np
-from random import random, seed
 from skopt import gp_minimize
 from skopt.space import Real, Integer
-import math
-from gpflowopt.domain import ContinuousParameter
-from gpflowopt.design import LatinHyperCube, FactorialDesign, RandomDesign
-from gpflowopt.bo import BayesianOptimizer
-from gpflowopt.acquisition import ExpectedImprovement
-import gpflow
-from gpflowopt.optim import SciPyOptimizer
-import GPy
-import GPyOpt
-from math import log
-import torch
-from botorch.models import SingleTaskGP
-from botorch.fit import fit_gpytorch_model
-from gpytorch.mlls import ExactMarginalLogLikelihood
-import matplotlib.pyplot as plt
-from botorch.acquisition import UpperConfidenceBound
-from botorch.optim import optimize_acqf
 
 
 class RecipeBuilder:
@@ -80,7 +62,7 @@ class RecipeBuilder:
         Fs_sp, Foil_sp, Fg_sp, pres_sp, discharge_sp, water_sp = self.split(sp_points)
 
         env = PenSimEnv(random_seed_ref=self.random_int)
-        # env = PenSimEnv(random_seed_ref=np.random.randint(1000))
+        #env = PenSimEnv(random_seed_ref=np.random.randint(1000))
         done = False
         observation, batch_data = env.reset()
         self.init_recipe(Fs_sp, Foil_sp, Fg_sp, pres_sp, discharge_sp, water_sp)
@@ -94,37 +76,6 @@ class RecipeBuilder:
             batch_yield += reward
         return -batch_yield
 
-    def get_batch_yield_gpflow(self, X):
-        x = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 80,
-             22, 30, 35, 34, 33, 32, 31, 30, 29, 23,
-             30, 42, 55, 60, 75, 65, 60,
-             0.6, 0.7, 0.8, 0.9, 1.1, 1, 0.9, 0.9,
-             0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 0,
-             0, 500, 100, 0, 400, 150, 250, 0, 100]
-        yields = []
-        for i in range(len(X)):
-            water_sp = X[i].tolist()
-            Fs_sp, Foil_sp, Fg_sp, pres_sp, discharge_sp, _ = self.split(x)
-
-            # Fs_sp, Foil_sp, Fg_sp, pres_sp, discharge_sp, water_sp = self.split(X[i].tolist())
-
-            env = PenSimEnv(random_seed_ref=self.random_int)
-            done = False
-            observation, batch_data = env.reset()
-            self.init_recipe(Fs_sp, Foil_sp, Fg_sp, pres_sp, discharge_sp, water_sp)
-            time_stamp, batch_yield, yield_pre = 0, 0, 0
-            while not done:
-                time_stamp += 1
-                Fs, Foil, Fg, Fpres, Fdischarge, Fw, Fpaa = self.recipe_at_t(time_stamp)
-                observation, batch_data, reward, done = env.step(time_stamp,
-                                                                 batch_data,
-                                                                 Fs, Foil, Fg, Fpres, Fdischarge, Fw, Fpaa)
-                batch_yield += reward
-            yields.append(-batch_yield)
-
-        yields = np.array(yields)
-        return yields[:, None]
-
     def get_bound(self, x, x_opt, manup_scale):
         lower_bound = x - x * manup_scale
         upper_bound = x + x * manup_scale
@@ -137,116 +88,6 @@ class RecipeBuilder:
 
         return lower_bound, upper_bound
 
-    def gpyopt(self):
-        # x = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 80,
-        #      22, 30, 35, 34, 33, 32, 31, 30, 29, 23,
-        #      30, 42, 55, 60, 75, 65, 60,
-        #      0.6, 0.7, 0.8, 0.9, 1.1, 1, 0.9, 0.9,
-        #      0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 0,
-        #      0, 500, 100, 0, 400, 150, 250, 0, 100]
-
-        x = [0, 500, 100, 0, 400, 150, 250, 0, 100]
-
-        lower = [ele * 0.9 if ele != 0 else ele for ele in x]
-        upper = [ele * 1.1 if ele != 0 else 1 for ele in x]
-        bounds = []
-        for i in range(len(x)):
-            tmp = {'name': f'x{i}', 'type': 'continuous', 'domain': (lower[i], upper[i])}
-            bounds.append(tmp)
-
-        constraints = [
-            {
-                'name': 'constrain_1',
-                'constraint': '(x[:,0] + x[:,1]) - 23'
-            },
-        ]
-
-        seed(274)
-        myBopt = GPyOpt.methods.BayesianOptimization(f=self.get_batch_yield_gpflow,
-                                                     initial_design_numdata=4,
-                                                     domain=bounds,
-                                                     verbosity=True)
-        myBopt.run_optimization(max_iter=100, eps=-1)
-        print(f"=== x_opt: {myBopt.x_opt}")
-        print(f"=== fx_opt: {myBopt.fx_opt}")
-        # print(f"=== before: {self.get_batch_yield(x)}")
-
-        plt.plot(myBopt.Y.T[0])
-        plt.show()
-
-    def botorch(self):
-        x = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 80,
-             22, 30, 35, 34, 33, 32, 31, 30, 29, 23,
-             30, 42, 55, 60, 75, 65, 60,
-             0.6, 0.7, 0.8, 0.9, 1.1, 1, 0.9, 0.9,
-             0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 0,
-             0, 500, 100, 0, 400, 150, 250, 0, 100]
-
-        X = []
-        for _ in range(10):
-            tmp = [ele * (1 + np.random.randint(-10, 10) / 100) for ele in x]
-            X.append(tmp)
-
-        train_X = torch.FloatTensor(X)
-        print(f"=== train_X: {train_X.shape}")
-
-        Y = self.get_batch_yield_gpflow(train_X)
-        train_Y = torch.FloatTensor(Y)
-
-        print(f"=== train_Y: {train_Y.shape}")
-        gp = SingleTaskGP(train_X, train_Y)
-        mll = ExactMarginalLogLikelihood(gp.likelihood, gp)
-        fit_gpytorch_model(mll)
-
-        UCB = UpperConfidenceBound(gp, beta=0.1)
-
-        lower = [ele * 0.9 if ele != 0 else ele for ele in x]
-        upper = [ele * 1.1 if ele != 0 else 1 for ele in x]
-
-        bounds = torch.stack([torch.FloatTensor(lower), torch.FloatTensor(upper)])
-        candidate, acq_value = optimize_acqf(
-            UCB, bounds=bounds, q=1, num_restarts=5, raw_samples=20,
-        )
-
-        print(f"=== candidate: {candidate}")
-        print(f"=== acq_value: {acq_value}")
-        print(f"=== actual yield: {self.get_batch_yield_gpflow(candidate)}")
-
-    def gpflow_opt(self):
-        # default
-        x = [8, 15, 30, 75, 150, 30, 37, 43, 47, 51, 57, 61, 65, 72, 76, 80, 84, 90, 116, 90, 80,
-             22, 30, 35, 34, 33, 32, 31, 30, 29, 23,
-             30, 42, 55, 60, 75, 65, 60,
-             0.6, 0.7, 0.8, 0.9, 1.1, 1, 0.9, 0.9,
-             0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 0,
-             0, 500, 100, 0, 400, 150, 250, 0, 100]
-        lower = [ele * 0.9 if ele != 0 else ele for ele in x]
-        upper = [ele * 1.1 if ele != 0 else 1 for ele in x]
-        domain = np.sum([ContinuousParameter('x{0}'.format(i), l, u) for i, l, u in zip(range(len(x)), lower, upper)])
-        design = RandomDesign(10, domain)
-        X = design.generate()
-        print(f"==== X: {X}")
-        print(f"==== X: {len(X)}")
-
-        domain1 = np.sum([ContinuousParameter('y{0}'.format(i), l, u) for i, l, u in zip(range(len(x)), x, x)])
-        x0 = RandomDesign(1, domain1)
-
-        Y = self.get_batch_yield_gpflow(X)
-
-        # initializing a standard BO model, Gaussian Process Regression with
-        # Matern52 ARD Kernel
-        model = gpflow.gpr.GPR(X, Y, gpflow.kernels.Matern52(domain.size, ARD=True))
-        alpha = ExpectedImprovement(model)
-
-        # Now we must specify an optimization algorithm to optimize the acquisition
-        # function, each iteration.
-        acqopt = SciPyOptimizer(domain)
-
-        # Now create the Bayesian Optimizer
-        optimizer = BayesianOptimizer(domain, alpha, optimizer=acqopt, initial=x0, verbose=True)
-        # with optimizer.silent():
-        r = optimizer.optimize(self.get_batch_yield_gpflow, n_iter=10)
-        print(r)
 
     def benchmark(self, total_calls, n_calls, n_random_starts, manup_scale):
         # default
@@ -257,7 +98,12 @@ class RecipeBuilder:
              0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 4000, 0, 0,
              0, 500, 100, 0, 400, 150, 250, 0, 100]
 
-        x0 = [7, 13, 30, 76, 148, 29, 33, 47, 44, 49, 51, 67, 59, 75, 83, 86, 75, 87, 120, 99, 88, 21, 33, 38, 33, 31, 30, 31, 32, 30, 25, 29, 46, 54, 66, 79, 68, 62, 0.6016503902342087, 0.707284455287067, 0.7454938930799496, 0.9697537579503417, 1.161999329699155, 0.9, 0.9574409087102624, 0.8908383114570896, 0, 4086, 0, 3969, 1, 3936, 0, 4344, 1, 3675, 0, 4094, 0, 3741, 0, 4392, 0, 4246, 0, 1, 0, 489, 97, 0, 363, 146, 252, 0, 94]
+        # 1000
+        # x0 = [7, 15, 27, 78, 163, 31, 33, 39, 50, 52, 54, 58, 62, 64, 71, 82, 89, 94, 116, 98, 87, 24, 31, 37, 31, 34, 31, 29, 30, 30, 25, 33, 40, 56, 66, 75, 68, 54, 0.5554127758991113, 0.7676077357976071, 0.768911753698651, 0.9365571601116198, 1.0861150998563076, 0.9931536974459727, 0.8776714419262855, 0.9493535950911615, 1, 4235, 1, 4309, 1, 4090, 0, 3875, 0, 3899, 1, 4280, 1, 4018, 0, 3795, 0, 4301, 1, 1, 1, 450, 90, 0, 366, 136, 227, 1, 94]
+
+        # 100
+        x0 = [8, 16, 28, 81, 137, 28, 38, 43, 48, 48, 56, 66, 60, 78, 77, 87, 80, 84, 104, 90, 82, 23, 29, 35, 30, 31, 28, 33, 31, 26, 25, 31, 37, 53, 61, 75, 64, 59, 0.6468329938975121, 0.7188338813762886, 0.8800000000000001, 0.8655090552916249, 0.9900000000000001, 1.0806341623771156, 0.99, 0.9193644054260693, 1, 3715, 1, 3926, 0, 4223, 0, 3600, 1, 4077, 1, 4003, 1, 3646, 1, 3790, 1, 4236, 1, 0, 1, 528, 91, 0, 418, 154, 270, 1, 105]
+
 
         num_iter = 0
 
@@ -311,8 +157,7 @@ class RecipeBuilder:
             #                          n_calls=n_calls,
             #                          n_random_starts=n_random_starts,
             #                          random_state=np.random.randint(1000),
-            #                          n_jobs=-1,
-            #                          verbose=True)
+            #                          n_jobs=-1)
             # else:
             #     res_gp = gp_minimize(self.get_batch_yield,
             #                          space,
@@ -320,11 +165,11 @@ class RecipeBuilder:
             #                          n_calls=n_calls,
             #                          n_random_starts=n_random_starts,
             #                          random_state=np.random.randint(1000),
-            #                          n_jobs=-1,
-            #                          verbose=True)
+            #                          n_jobs=-1)
 
             res_gp = gp_minimize(self.get_batch_yield,
                                  space,
+                                 x0=x0,
                                  n_calls=n_calls,
                                  n_random_starts=n_random_starts,
                                  random_state=np.random.randint(1000),
@@ -362,39 +207,35 @@ for seed in range(1, 101):
 
     import pickle
 
-    with open(f'100_4_seed_{seed}_yield_office_default5', 'wb') as fp:
+    with open(f'100_2nd_layer_{seed}_office_yield', 'wb') as fp:
         pickle.dump(yields, fp)
 
-    with open(f'100_4_seed_{seed}_recipe_office_default5', 'wb') as fp:
+    with open(f'100_2nd_layer_{seed}_office_recipe', 'wb') as fp:
         pickle.dump(recipes, fp)
 
 # import pickle
 #
-# with open('1000_100_1_seed_1_yield', 'rb') as fp:
+# with open('1000_100_1st_layer_office_yield', 'rb') as fp:
 #     yields = pickle.load(fp)
 #
-# with open('1000_100_1_seed_1_recipe', 'rb') as fp:
+# with open('1000_100_1st_layer_office_recipe', 'rb') as fp:
 #     recipe = pickle.load(fp)
 #
 # new_yields = [-ele for ele in yields]
-# # print(max(new_yields))
-# # print(new_yields.index((max(new_yields))))
-# # print(recipe[new_yields.index((max(new_yields)))])
-# #
-# # top_1_recipe = [8, 16, 27, 70, 145, 32, 34, 38, 45, 53, 57, 55, 61, 72, 81, 86, 76, 84, 119, 99, 87, 21, 29, 36, 30, 35,
-# #                 34, 34, 31, 27, 25, 31, 46, 49, 66, 81, 67, 66, 0.6006477795120947, 0.662649715237619,
-# #                 0.8400327687015882, 0.9184041217051334, 1.1103892968816163, 1.0352994970737246, 0.9182184239159428,
-# #                 0.9006338441224637, 0, 4155, 1, 3948, 1, 4368, 0, 3816, 1, 4036, 1, 4253, 0, 3600, 1, 3704, 1, 4307, 1,
-# #                 1, 1, 515, 91, 0, 392, 163, 235, 0, 102]
+# print(max(new_yields))
+# print(new_yields.index((max(new_yields))))
+# print(recipe[new_yields.index((max(new_yields)))])
+#
+# top_1_recipe = [7, 15, 27, 78, 163, 31, 33, 39, 50, 52, 54, 58, 62, 64, 71, 82, 89, 94, 116, 98, 87, 24, 31, 37, 31, 34, 31, 29, 30, 30, 25, 33, 40, 56, 66, 75, 68, 54, 0.5554127758991113, 0.7676077357976071, 0.768911753698651, 0.9365571601116198, 1.0861150998563076, 0.9931536974459727, 0.8776714419262855, 0.9493535950911615, 1, 4235, 1, 4309, 1, 4090, 0, 3875, 0, 3899, 1, 4280, 1, 4018, 0, 3795, 0, 4301, 1, 1, 1, 450, 90, 0, 366, 136, 227, 1, 94]
 #
 # import matplotlib.pyplot as plt
 # plt.plot(new_yields)
 # plt.show()
-# import numpy as np
-# print(np.mean(new_yields))
-# print(np.std(new_yields))
-# print(np.min(new_yields))
-# print(np.max(new_yields))
-
-# recipe_builder.botorch()
-# recipe_builder.gpyopt()
+# # import numpy as np
+# # print(np.mean(new_yields))
+# # print(np.std(new_yields))
+# # print(np.min(new_yields))
+# # print(np.max(new_yields))
+#
+# # recipe_builder.botorch()
+# # recipe_builder.gpyopt()
