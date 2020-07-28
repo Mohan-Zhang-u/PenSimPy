@@ -1,39 +1,29 @@
 ![alt text](figures/logo_light.png "Logo Title Text 1")
-# PenSimPy ![](https://img.shields.io/badge/python-3.6.8-orange)
-Python version of [IndPenSim](http://www.industrialpenicillinsimulation.com/). Sequential batch control, Raman spectra simulation, PRBS (pseudo random binary signal),
-Faults (Aeration rate fault, Vessel back pressure fault...) and Substrate prediction are enabled. 
-A fresh web application based on PenSimPy and [Quartic.AI](https://quartic.ai/) can be found [here](http://quartic.ddns.net:8000/).
 
-#### How to execute
-```
-pip install -r requirements.txt
-python main.py
-```
-#### Setup in main.py
-```
-* Using Raman Spectra by default
-* No PRBS and Faults are applied by default
-```
-#### Results
-##### Inputs
-<p align="center">
-  <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/Figure_2.png" width="60%">
-</p>
+**Development Status:** As of 08/2020 PenSimPy is under active maintenance (expect bug fixes and updates). 
+Please follow, star, and fork to get the latest functions.
+# PenSimPy ![](https://img.shields.io/badge/python-3.6.8-orange) ![](https://img.shields.io/badge/c%2B%2B-11-blue)
+PenSimPy is a Python version of [IndPenSim](http://www.industrialpenicillinsimulation.com/), which simulates the industrial-scale Penicillium chrysogenum fermentation. 
+This simulator is based on `c++` solving the ODE functions so as to achieve a faster performance than the MATLAB version. 
 
-##### Outputs
-<p align="center">
-  <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/Figure_1.png" width="60%">
-</p>
+PenSimPy aims for recording those key features such as `pH`, `temperature`, `vessel volume`, `vessel weight`, `penicillin concentration`, 
+`dissolved oxygen concentration`, `sugar feed rate`, `soil bean feed rate`, `aeration rate`, `back pressure`, `water`, `acid`, 
+`phenylacetic acid flow-rate`, `Oxygen in percent in off-gas`, and the Raman spectroscopy data throughout the whole process. A conventionally used 
+Sequential Batch Control strategy with PID control is presented with example codes and all the recipe's feed can be manually updated. 
 
-##### Csv data generation
+Furthermore, we incorporate Reinforcement Learning to improve the penicillin gain and present them as example codes.
+A web application based on PenSimPy can be found [here](http://quartic.ddns.net:8000/).
+
+Installation
+============
 ```
-/path/to/PenSimPy/data/0/batch_median_trend.csv
-/path/to/PenSimPy/data/0/batch_statistics.csv
-/path/to/PenSimPy/data/0/raman.csv
+pip install pensimpy
 ```
-#### Benchmark
-##### Time cost with Raman Simulation (* MacBook Pro (15-inch, 2018); 2.2 GHz 6-Core Intel Core i7; 16 GB 2400 MHz DDR4)
-<p align="center">
-  <img src="https://github.com/Quarticai/PenSimPy/blob/master/figures/benchmark.png" width="88%">
-</p>
+Examples
+============
+See the `examples` directory
+- see [examples/batch_generation.py](pensimpy/examples/batch_generation.py) to generate
+batch and Raman data with self-designed recipes
+- see [examples/reinforcement_learning_boilerplate.py](pensimpy/examples/reinforcement_learning_boilerplate.py) to 
+simulate penicillin yield process with reinforcement learning
 
