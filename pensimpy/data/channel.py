@@ -1,12 +1,12 @@
 class Channel:
     """
-    Class attributes for each var in batch data
+    Class attributes for each var in batch data.
     """
 
     def __init__(self, **kwargs):
         self.name = kwargs.get('name')
-        self.yUnit = kwargs.get('yUnit')
-        self.tUnit = kwargs.get('tUnit')
+        self.y_unit = kwargs.get('y_unit')
+        self.t_unit = kwargs.get('t_unit')
         if kwargs.get('time') is not None:
             self.t = kwargs['time'].T.tolist()[0]
 
