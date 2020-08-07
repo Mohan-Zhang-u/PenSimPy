@@ -16,6 +16,8 @@ A web application based on PenSimPy can be found [here](http://quartic.ddns.net:
 
 Installation
 ============
+First step is to install [fastodeint](https://github.com/Quarticai/fastodeint), which supports Mac, Ubuntu and Windows 10.
+Then you can install PenSimPy by the following command
 ```
 pip install pensimpy
 ```
