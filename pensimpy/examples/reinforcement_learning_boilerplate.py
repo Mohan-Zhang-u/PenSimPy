@@ -1,7 +1,10 @@
 import time
 import random
 import numpy as np
-from pensimpy.data.recipe import Recipe
+from pensimpy.data.recipe import RecipeCombo, Recipe
+from pensimpy.data.constants import FS, FOIL, FG, PRES, DISCHARGE, WATER, PAA, DEFAULT_PENICILLIN_RECIPE_ORDER
+from pensimpy.data.constants import FS_DEFAULT_PROFILE, FOIL_DEFAULT_PROFILE, FG_DEFAULT_PROFILE, \
+    PRESS_DEFAULT_PROFILE, DISCHARGE_DEFAULT_PROFILE, WATER_DEFAULT_PROFILE, PAA_DEFAULT_PROFILE
 from pensimpy.peni_env_setup import PenSimEnv
 from pensimpy.constants import STEP_IN_MINUTES
 
@@ -30,8 +33,17 @@ def run(episodes=1000):
     t = time.time()
 
     for e in range(episodes):
-        recipe = Recipe.get_default()
-        env = PenSimEnv(recipe=recipe)
+        recipe_dict = {FS: Recipe(FS_DEFAULT_PROFILE, FS),
+                       FOIL: Recipe(FOIL_DEFAULT_PROFILE, FOIL),
+                       FG: Recipe(FG_DEFAULT_PROFILE, FG),
+                       PRES: Recipe(PRESS_DEFAULT_PROFILE, PRES),
+                       DISCHARGE: Recipe(DISCHARGE_DEFAULT_PROFILE, DISCHARGE),
+                       WATER: Recipe(WATER_DEFAULT_PROFILE, WATER),
+                       PAA: Recipe(PAA_DEFAULT_PROFILE, PAA)}
+
+        recipe_combo = RecipeCombo(recipe_dict=recipe_dict)
+
+        env = PenSimEnv(recipe_combo=recipe_combo)
         done = False
         observation, batch_data = env.reset()
         k_timestep, batch_yield, yield_pre = 0, 0, 0
@@ -45,7 +57,10 @@ def run(episodes=1000):
             Fs_a, Foil_a, Fg_a, pres_a, discharge_a, Fw_a, Fpaa_a = actions
 
             """Get action from recipe agent based on k_timestep"""
-            Fs, Foil, Fg, pressure, discharge, Fw, Fpaa = recipe.get_values_at(k_timestep * STEP_IN_MINUTES)
+            values_dict = recipe_combo.get_values_dict_at(k_timestep * STEP_IN_MINUTES)
+            Fs, Foil, Fg, pressure, discharge, Fw, Fpaa = values_dict['Fs'], values_dict['Foil'], values_dict['Fg'], \
+                                                          values_dict['pressure'], values_dict['discharge'], \
+                                                          values_dict['Fw'], values_dict['Fpaa']
 
             """update recipe actions with agent actions"""
             Fs *= (1 + Fs_a)
