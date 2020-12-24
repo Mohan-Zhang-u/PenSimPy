@@ -90,7 +90,7 @@ class X0:
     Initialize key features of the batch data.
     """
 
-    def __init__(self, random_seed_ref, intial_conds):
+    def __init__(self, random_seed_ref, initial_conds):
         random_state = np.random.RandomState(random_seed_ref)
         self.mux = 0.41 + 0.025 * random_state.randn(1)[0]
 
@@ -108,7 +108,7 @@ class X0:
 
         random_seed_ref += 1
         random_state = np.random.RandomState(random_seed_ref)
-        self.X = intial_conds + 0.1 * random_state.randn(1)[0]
+        self.X = initial_conds + 0.1 * random_state.randn(1)[0]
         self.P = 0
 
         random_seed_ref += 1
@@ -138,8 +138,8 @@ class X0:
         self.T = 297 + 0.5 * random_state.randn(1)[0]
 
         random_seed_ref += 1
-        self.a0 = intial_conds * 0.3333333333333333
-        self.a1 = intial_conds * 0.6666666666666666
+        self.a0 = initial_conds * 0.3333333333333333
+        self.a1 = initial_conds * 0.6666666666666666
         self.a3 = 0
         self.a4 = 0
         self.Culture_age = 0

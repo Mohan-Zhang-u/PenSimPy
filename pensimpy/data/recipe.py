@@ -1,271 +1,334 @@
-from collections import OrderedDict
-from itertools import chain
-from pensimpy.constants import MINUTES_PER_HOUR
+import math
+from typing import Dict, List, Tuple
+from enum import Enum
+import json
+
+from pensimpy.data.constants import FLOAT_PRECISION, DEFAULT_MIN_TIME_IN_HOUR, DEFAULT_MAX_TIME_IN_HOUR, \
+    MINUTES_IN_AN_HOUR
+
+
+class ValueType(Enum):
+    NORMAL = 1
+    LOWER_BOUND = 2
+    UPPER_BOUND = 3
+
+
+class FillingMethod(Enum):
+    BACKWARD = 1
+    FROWARD = 2
+    INTERPOLATION = 3
 
 
 class Setpoint:
-    """
-    Class for defining the setpoint which contributes process variables.
-    """
-    UOT_HOUR = "hour"
-    UOT_MINUTE = "minute"
+    def __init__(self, time: float, value: float,
+                 lower_bound: float = None, upper_bound: float = None):
+        self.time = time
+        self.value = round(value, FLOAT_PRECISION)
+        self._lower_bound = self.value if lower_bound is None else round(lower_bound, FLOAT_PRECISION)
+        self.check_lower_bound()
+        self._upper_bound = self.value if upper_bound is None else round(upper_bound, FLOAT_PRECISION)
+        self.check_upper_bound()
 
-    def __init__(self, time_until, value, unit_of_time=UOT_HOUR):
-        assert unit_of_time in {self.UOT_HOUR, self.UOT_MINUTE}, "Unknown unit of time"
-        if unit_of_time == self.UOT_HOUR:
-            assert (time_until * MINUTES_PER_HOUR) % 1 == 0, (f"{time_until} {self.UOT_HOUR}s is invalid. "
-                                                                   f"The given time must be a multiple of 1 minute"
-                                                                   " after being converted from hours")
-        self._time_until = time_until
-        self._unit_of_time = unit_of_time  # should never be modified once been set
-        self._value = value
+    def get_sp_dict(self):
+        return {"time": self.time, "value": self.value,
+                "lower_bound": self.lower_bound,
+                "upper_bound": self.upper_bound}
 
-    def get_time_until_in_minutes(self):
-        if self.unit_of_time == self.UOT_MINUTE:
-            return self._time_until
-        else:
-            return int(self._time_until * MINUTES_PER_HOUR)
+    def __str__(self):
+        return json.dumps(self.get_sp_dict())
 
     @property
-    def time(self):
-        return self._time_until
+    def lower_bound(self):
+        return self._lower_bound
+
+    @lower_bound.setter
+    def lower_bound(self, val):
+        assert val <= self.value, f"lower bound = {val} is larger than value = {self.value}"
+        self._lower_bound = val
 
     @property
-    def value(self):
-        return self._value
+    def upper_bound(self):
+        return self._upper_bound
 
-    @property
-    def unit_of_time(self):
-        return self._unit_of_time
+    @upper_bound.setter
+    def upper_bound(self, val):
+        assert val >= self.value, f"upper bound = {val} is smaller than value = {self.value}"
+        self._upper_bound = val
 
-    def is_after(self, another):
-        return self.get_time_until_in_minutes() > another.get_time_until_in_minutes()
+    def check_lower_bound(self):
+        assert self.lower_bound <= self.value, f"lower bound = {self.lower_bound} is larger than value = {self.value}"
 
-
-class ProcessVariable:
-    """
-    Process variables feed the simulation and realize the Sequential Batch Control. And it support adding new setpoints
-    and modifying current setpoints.
-    """
-    class Decorator:
-        @staticmethod
-        def populate_setpoint_value_lookup(func):
-            def wrapper(*args, **kwargs):
-                func(*args, **kwargs)
-                values = ProcessVariable.flatten(args[0]._setpoints_lookup)
-                args[0]._setpoint_value_lookup = dict(zip(range(1, len(values) + 1), values))
-            return wrapper
-
-    def __init__(self, name):
-        self.name = name
-        self._setpoints_lookup = OrderedDict()
-        self._setpoint_value_lookup = {}
-        self._last_added_setpoint = None
-        self._setpoint_time_min = None
-        self._setpoint_time_max = None
-
-    @Decorator.populate_setpoint_value_lookup
-    def add_setpoint(self, setpoint):
-        time_key = setpoint.get_time_until_in_minutes()
-
-        if len(self._setpoints_lookup) == 0:
-            self._setpoints_lookup[time_key] = setpoint
-        else:
-            if time_key in self._setpoints_lookup:
-                raise ValueError("A setpoint with the same time has been added. The time of setpoint you're "
-                                 "adding must be "
-                                 "greater the time of the last one you've added. To override a existing setpoint, "
-                                 "please use update_setpoint() instead")
-
-            if setpoint.is_after(self._last_added_setpoint):
-                self._setpoints_lookup[time_key] = setpoint
-            else:
-                ValueError(
-                    "The time of setpoint you're adding must be greater the time of the last one you've added.")
-
-        self._last_added_setpoint = setpoint
-
-        if self._setpoint_time_min is None:
-            self._setpoint_time_min = time_key
-            self._setpoint_time_max = time_key
-        else:
-            self._setpoint_time_max = time_key
-
-    @Decorator.populate_setpoint_value_lookup
-    def update_setpoint(self, setpoint):
-        time_key = setpoint.get_time_until_in_minutes()
-
-        if time_key in self._setpoints_lookup:
-            self._setpoints_lookup[time_key] = setpoint
-        else:
-            raise KeyError("Time key not found")
-
-    @Decorator.populate_setpoint_value_lookup
-    def add_setpoints(self, *setpoints):
-        for sp in setpoints:
-            self.add_setpoint(sp)
-
-    def update_setpoints(self, *setpoints):
-        for sp in setpoints:
-            self.update_setpoint(sp)
-
-    @staticmethod
-    def flatten(setpoints_lookup):
-        setpoints = list(setpoints_lookup.values())
-        time_deltas = [sp.get_time_until_in_minutes() for sp in setpoints[:1]]
-        time_deltas.extend([sp.get_time_until_in_minutes() - prev_sp.get_time_until_in_minutes()
-                            for sp, prev_sp in zip(setpoints[1:], setpoints[:-1])])
-
-        return list(chain.from_iterable([[sp.value] * delta for sp, delta in zip(setpoints, time_deltas)]))
-
-    def __len__(self):
-        return len(self._setpoints_lookup)
-
-    def get_setpoint_value_at(self, t_minute, forward_fill=True):
-        if t_minute > self._setpoint_time_max and forward_fill is True:
-            return self._setpoint_value_lookup[self._setpoint_time_max]
-        try:
-            value = self._setpoint_value_lookup[t_minute]
-            return value
-        except KeyError as e:
-            raise RuntimeError(f'Unable to find value at {t_minute} minutes for process '
-                               f'variable "{self.name}"') from e
+    def check_upper_bound(self):
+        assert self.upper_bound >= self.value, f"upper bound = {self.upper_bound} is smaller than value = {self.value}"
 
 
-class ManualProcessVariable(ProcessVariable):
-    pass
-
-
-class PIDControlledProcessVariable(ProcessVariable):
-    pass
+class SafetyLimit:
+    def __init__(self, lower_bound: float = None,
+                 upper_bound: float = None):
+        if lower_bound is None and upper_bound is None:
+            raise ValueError(f"Not a valid SafetyLimit")
+        if lower_bound is not None and upper_bound is not None:
+            assert lower_bound <= upper_bound, f"lower bound = {lower_bound} should be less than or equal to " \
+                                               f"upper bound = {upper_bound}"
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
 
 
 class Recipe:
-    """
-    Recipe class for getting the default recipes and manually updating setpoints in recipe.
-    """
-    FS = "Fs"
-    FOIL = "Foil"
-    FG = "Fg"
-    PRES = "pres"
-    DISCHARGE = "discharge"
-    WATER = "water"
-    PAA = "paa"
+    def __init__(self, sp_list: List[Dict[str, float]],
+                 name: str):
+        assert len(sp_list) > 0, "Can't initiate a recipe instance with an empty setpoint list"
+        assert isinstance(name, str), "Can't initiate a recipe instance without a name"
+        self.name = name
+        self._sp_list = []
+        self.index_lookup = {}
+        self.add_setpoints(sp_list)
 
-    DEFAULT_OUTPUT_ORDER = [FS, FOIL, FG, PRES, DISCHARGE, WATER, PAA]
+    @property
+    def sp_list(self):
+        return self._sp_list
 
-    def __init__(self, **kwargs):
-        self._process_variables_lookup = OrderedDict([(name, kwargs[name])
-                                                      for name in self.DEFAULT_OUTPUT_ORDER])
+    @sp_list.setter
+    def sp_list(self, val: List[Setpoint]):
+        self._sp_list = sorted(val, key=lambda x: x.time)
+        self.index_lookup = self.create_index_lookup(self._sp_list)
+
+    def _create_parameter_name(self, setpoint):
+        return f"{self.name}@{setpoint.time}"
+
+    @staticmethod
+    def tokenize_parameter_name(parameter_name):
+        tokens = parameter_name.split('@')
+        recipe_name = tokens[0]
+        str_time = tokens[1]
+        return recipe_name, str_time
 
     @classmethod
-    def get_default(cls):
-        fs = ManualProcessVariable(name="fs")
-        fs.add_setpoints(
-            Setpoint(time_until=3, value=8),
-            Setpoint(time_until=12, value=15),
-            Setpoint(time_until=16, value=30),
-            Setpoint(time_until=20, value=75),
-            Setpoint(time_until=24, value=150),
-            Setpoint(time_until=28, value=30),
-            Setpoint(time_until=32, value=37),
-            Setpoint(time_until=36, value=43),
-            Setpoint(time_until=40, value=47),
-            Setpoint(time_until=44, value=51),
-            Setpoint(time_until=48, value=57),
-            Setpoint(time_until=52, value=61),
-            Setpoint(time_until=56, value=65),
-            Setpoint(time_until=60, value=72),
-            Setpoint(time_until=64, value=76),
-            Setpoint(time_until=68, value=80),
-            Setpoint(time_until=72, value=84),
-            Setpoint(time_until=76, value=90),
-            Setpoint(time_until=80, value=116),
-            Setpoint(time_until=160, value=90),
-            Setpoint(time_until=230, value=80),
-        )
+    def create_from(cls, recipe_dict: Dict):
+        assert len(recipe_dict) > 0, "recipe dict is empty"
+        sp_list = []
+        recipe_name = None
+        for k, v in recipe_dict.items():
+            parameter_name, time = cls.tokenize_parameter_name(k)
+            if recipe_name is None:
+                recipe_name = parameter_name
+            assert recipe_name == parameter_name, f"recipe name should be consistent, " \
+                                                  f"but found '{recipe_name}' and '{parameter_name}'"
+            sp_list.append({"time": int(time), "value": v})
+        return cls(sp_list, recipe_name)
 
-        foil = ManualProcessVariable(name="foil")
-        foil.add_setpoints(
-            Setpoint(time_until=4, value=22),
-            Setpoint(time_until=16, value=30),
-            Setpoint(time_until=56, value=35),
-            Setpoint(time_until=60, value=34),
-            Setpoint(time_until=64, value=33),
-            Setpoint(time_until=68, value=32),
-            Setpoint(time_until=72, value=31),
-            Setpoint(time_until=76, value=30),
-            Setpoint(time_until=80, value=29),
-            Setpoint(time_until=230, value=23),
-        )
+    def dump(self) -> Dict:
+        recipe_dict = {}
+        for sp in self.sp_list:
+            recipe_dict[self._create_parameter_name(sp)] = sp.value
+        return recipe_dict
 
-        fg = ManualProcessVariable(name="fg")
-        fg.add_setpoints(
-            Setpoint(time_until=8, value=30),
-            Setpoint(time_until=20, value=42),
-            Setpoint(time_until=40, value=55),
-            Setpoint(time_until=90, value=60),
-            Setpoint(time_until=200, value=75),
-            Setpoint(time_until=230, value=65)
-        )
+    def are_setpoints_in_safety_limit(self, safety_limit: SafetyLimit) -> bool:
+        return all([self.is_setpoint_in_safety_limit(sp, safety_limit)
+                    for sp in self.sp_list])
 
-        pres = ManualProcessVariable(name="pres")
-        pres.add_setpoints(
-            Setpoint(time_until=12.4, value=0.6),
-            Setpoint(time_until=25, value=0.7),
-            Setpoint(time_until=30, value=0.8),
-            Setpoint(time_until=40, value=0.9),
-            Setpoint(time_until=100, value=1.1),
-            Setpoint(time_until=150, value=1),
-            Setpoint(time_until=200, value=0.9),
-            Setpoint(time_until=230, value=0.9)
-        )
+    @staticmethod
+    def is_setpoint_in_safety_limit(sp: Setpoint, safety_limit: SafetyLimit) -> bool:
+        lower_bound = safety_limit.lower_bound
+        upper_bound = safety_limit.upper_bound
 
-        discharge = ManualProcessVariable(name="discharge")
-        discharge.add_setpoints(
-            Setpoint(time_until=100, value=0),
-            Setpoint(time_until=102, value=4000),
-            Setpoint(time_until=130, value=0),
-            Setpoint(time_until=132, value=4000),
-            Setpoint(time_until=150, value=0),
-            Setpoint(time_until=152, value=4000),
-            Setpoint(time_until=170, value=0),
-            Setpoint(time_until=172, value=4000),
-            Setpoint(time_until=190, value=0),
-            Setpoint(time_until=192, value=4000),
-            Setpoint(time_until=210, value=0),
-            Setpoint(time_until=212, value=4000),
-            Setpoint(time_until=230, value=0)
-        )
+        if lower_bound is not None and upper_bound is not None:
+            return safety_limit.lower_bound <= sp.value <= safety_limit.upper_bound
 
-        water = ManualProcessVariable(name="water")
-        water.add_setpoints(
-            Setpoint(time_until=50, value=0),
-            Setpoint(time_until=75, value=500),
-            Setpoint(time_until=150, value=100),
-            Setpoint(time_until=160, value=0),
-            Setpoint(time_until=170, value=400),
-            Setpoint(time_until=200, value=150),
-            Setpoint(time_until=230, value=250)
-        )
+        elif lower_bound is not None and upper_bound is None:
+            return safety_limit.lower_bound <= sp.value
 
-        paa = PIDControlledProcessVariable(name="paa")
-        paa.add_setpoints(
-            Setpoint(time_until=5, value=5),
-            Setpoint(time_until=40, value=0),
-            Setpoint(time_until=200, value=10),
-            Setpoint(time_until=230, value=4),
-        )
+        elif lower_bound is None and upper_bound is not None:
+            return sp.value <= safety_limit.upper_bound
 
-        return Recipe(Fs=fs, Foil=foil, Fg=fg, pres=pres, discharge=discharge, water=water, paa=paa)
+    @classmethod
+    def create_index_lookup(cls, sp_list: List[Setpoint]) -> Dict:
+        return dict([(sp.time, i) for i, sp in enumerate(sp_list)])
 
-    def get_values_at(self, t_minute, forward_fill=True, output_order=None):
-        output_order = output_order or self.DEFAULT_OUTPUT_ORDER
-        return [self._process_variables_lookup[process_variable_name].get_setpoint_value_at(t_minute, forward_fill)
-                for process_variable_name in output_order]
+    def update_setpoint(self, sp: Setpoint):
+        idx = self.index_lookup[sp.time]
+        self.sp_list = self.sp_list[0:idx] + [sp] + self.sp_list[idx + 1:]
 
-    def update_process_variable_setpoints(self, process_variable_name, *setpoints):
-        if process_variable_name in self._process_variables_lookup:
-            self._process_variables_lookup[process_variable_name].update_setpoints(*setpoints)
+    def delete_setpoint(self, time: float):
+        assert time in self.index_lookup.keys(), f"unable to delete non-existing setpoint, time = {time}"
+
+        idx = self.index_lookup[time]
+        self.sp_list = self.sp_list[0:idx] + self.sp_list[idx + 1:]
+
+    def delete_setpoints(self, time_list: List[float]):
+        for time in time_list:
+            self.delete_setpoint(time)
+
+    def add_setpoint(self, sp: Dict[str, float]):
+        sp = Setpoint(**sp)
+        assert sp.time not in self.index_lookup.keys(), f"time = {sp.time} already exists"
+        self.sp_list = self.sp_list + [sp]
+
+    def add_setpoints(self, sp_list: List[Dict[str, float]]):
+        for sp in sp_list:
+            self.add_setpoint(sp)
+
+    def find_setpoints_interval(self, time: float) -> Tuple[Setpoint, Setpoint]:
+        assert len(self.sp_list) > 0, "no setpoints available"
+
+        if len(self.sp_list) == 1:
+            return self.sp_list[0], self.sp_list[0]
+
+        left_bound_time = self.sp_list[0].time
+        right_bound_time = self.sp_list[-1].time
+
+        # back-fill when pass left bound
+        if time < left_bound_time:
+            return self.sp_list[0], self.sp_list[0]
+
+        # forward-fill when pass right bound
+        if time > right_bound_time:
+            return self.sp_list[-1], self.sp_list[-1]
+
+        start = 0
+        end = len(self.sp_list) - 1
+        while end > start:
+            mid = math.ceil((end + start) / 2)
+            if time >= self.sp_list[mid].time:
+                start = mid
+            else:
+                end = mid - 1
+        if self.sp_list[start].time == time:
+            return self.sp_list[start], self.sp_list[start]
         else:
-            raise KeyError("Process variable name not found")
+            return self.sp_list[start], self.sp_list[min(start + 1, len(self.sp_list) - 1)]
+
+    @staticmethod
+    def shrink_by(value: float, safety_limit: SafetyLimit) -> float:
+        lower_bound = safety_limit.lower_bound
+        upper_bound = safety_limit.upper_bound
+
+        if lower_bound is not None:
+            value = max(value, lower_bound)
+
+        if upper_bound is not None:
+            value = min(value, upper_bound)
+
+        return value
+
+    def get_value_at(self, time: float,
+                     value_type: ValueType = ValueType.NORMAL,
+                     float_precision: int = FLOAT_PRECISION,
+                     safety_limit: SafetyLimit = None,
+                     filling_method: FillingMethod = FillingMethod.INTERPOLATION) -> float:
+
+        left_sp, right_sp = self.find_setpoints_interval(time)
+
+        if value_type == ValueType.NORMAL:
+            left_val, right_val = left_sp.value, right_sp.value
+
+        elif value_type == ValueType.LOWER_BOUND:
+            left_val, right_val = left_sp.lower_bound, right_sp.lower_bound
+
+        elif value_type == ValueType.UPPER_BOUND:
+            left_val, right_val = left_sp.upper_bound, right_sp.upper_bound
+
+        else:
+            raise Exception(f"unknown value type {value_type}")
+
+        val = -1
+
+        if filling_method == FillingMethod.FROWARD:
+            val = left_val
+
+        elif filling_method == FillingMethod.BACKWARD:
+            val = right_val
+
+        elif filling_method == FillingMethod.INTERPOLATION:
+            val_delta = right_val - left_val
+            time_delta = right_sp.time - left_sp.time
+            val = left_val if time_delta == 0 else \
+                (val_delta / time_delta) * (time - left_sp.time) + left_val
+
+            if safety_limit is not None:
+                val = self.shrink_by(value=val, safety_limit=safety_limit)
+
+        return round(val, float_precision)
+
+    def get_points(self, bfill_from: float = None, ffill_to: float = None,
+                   value_type: ValueType = ValueType.NORMAL,
+                   safety_limit: SafetyLimit = None) -> List[List]:
+
+        time_list = list(self.index_lookup.keys())
+
+        assert len(time_list) > 0, "no setpoints available"
+
+        if bfill_from is not None:
+            assert bfill_from <= time_list[0], "Can't back-fill points to the given time, " \
+                                               "it must be less than or equals to the time of the first setpoint"
+            if time_list[0] != bfill_from:
+                time_list = [bfill_from] + time_list
+
+        if ffill_to is not None:
+            assert ffill_to >= time_list[-1], "Can't forward-fill points to the given time, " \
+                                              "it must be greater than or equals the time of the last setpoint"
+            if time_list[-1] != ffill_to:
+                time_list = time_list + [ffill_to]
+
+        points_list = []
+
+        for time in time_list:
+            points_list.append([time, self.get_value_at(time=time, value_type=value_type,
+                                                        safety_limit=safety_limit)])
+
+        return points_list
+
+    def get_lower_bound_points(self, safety_limit: SafetyLimit = None) -> List[List]:
+        return self.get_points(value_type=ValueType.LOWER_BOUND,
+                               safety_limit=safety_limit)
+
+    def get_upper_bound_points(self, safety_limit: SafetyLimit = None) -> List[List]:
+        return self.get_points(value_type=ValueType.UPPER_BOUND,
+                               safety_limit=safety_limit)
+
+    def get_search_space(self, safety_limit: SafetyLimit):
+        search_space = []
+
+        for setpoint in self.sp_list:
+            lower_bound = max(safety_limit.lower_bound, setpoint.lower_bound)
+            upper_bound = min(safety_limit.upper_bound, setpoint.upper_bound)
+            search_space.append({
+                "name": self._create_parameter_name(setpoint),
+                "range": [lower_bound, upper_bound],
+                "type": "real",
+                "decimal": FLOAT_PRECISION
+            })
+        return search_space
+
+    @classmethod
+    def create_recipe_lookup_from_dump(cls, recipe_dump: Dict):
+        recipe_dump_lookup = {}
+        for parameter_name, value in recipe_dump.items():
+            recipe_name, _ = cls.tokenize_parameter_name(parameter_name)
+            if recipe_name in recipe_dump_lookup:
+                recipe_dump_lookup[recipe_name][parameter_name] = value
+            else:
+                recipe_dump_lookup[recipe_name] = {parameter_name: value}
+
+        for recipe_name, recipe_dump in recipe_dump_lookup.items():
+            recipe_dump_lookup[recipe_name] = Recipe.create_from(recipe_dump)
+        return recipe_dump_lookup
+
+
+class RecipeCombo:
+    def __init__(self, recipe_dict: Dict[str, Recipe]):
+        self.recipe_dict = recipe_dict
+
+    def get_values_dict_at(self, time: float,
+                           value_type: ValueType = ValueType.NORMAL,
+                           float_precision: int = FLOAT_PRECISION,
+                           safety_limit: SafetyLimit = None) -> Dict:
+        values_dict = {}
+        for name, recipe in self.recipe_dict.items():
+            values_dict[name] = recipe.get_value_at(time=time / MINUTES_IN_AN_HOUR,
+                                                    value_type=value_type,
+                                                    float_precision=float_precision,
+                                                    safety_limit=safety_limit,
+                                                    filling_method=FillingMethod.BACKWARD)
+
+        return values_dict

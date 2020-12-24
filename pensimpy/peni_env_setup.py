@@ -16,7 +16,7 @@ class PenSimEnv:
     Class for setting up the simulation environment, simulating the penicillin yield process with Raman spectra, and
     generating the batch data and Raman spectra data in pandas dataframe.
     """
-    def __init__(self, recipe, fast=True):
+    def __init__(self, recipe_combo, fast=True):
         self.xinterp = None
         self.x0 = None
         self.param_list = None
@@ -24,7 +24,7 @@ class PenSimEnv:
         self.yield_pre = 0
         self.random_seed_ref = 0
         self.fast = fast
-        self.recipe = recipe
+        self.recipe_combo = recipe_combo
 
     def reset(self):
         """
@@ -33,10 +33,10 @@ class PenSimEnv:
         # Enbaling seed for repeatable random numbers for different batches
         seed_ref = 31 + self.random_seed_ref
         random_state = np.random.RandomState(seed_ref)
-        intial_conds = 0.5 + 0.05 * random_state.randn(1)[0]
+        initial_conds = 0.5 + 0.05 * random_state.randn(1)[0]
 
         # create x0
-        self.x0 = X0(seed_ref, intial_conds)
+        self.x0 = X0(seed_ref, initial_conds)
 
         # alpha_kla
         seed_ref += 14
@@ -776,7 +776,10 @@ class PenSimEnv:
         while not done:
             k_timestep += 1
             # Get action from recipe agent based on time
-            Fs, Foil, Fg, pressure, discharge, Fw, Fpaa = self.recipe.get_values_at(k_timestep * STEP_IN_MINUTES)
+            values_dict = self.recipe_combo.get_values_dict_at(time=k_timestep * STEP_IN_MINUTES)
+            Fs, Foil, Fg, pressure, discharge, Fw, Fpaa = values_dict['Fs'], values_dict['Foil'], values_dict['Fg'], \
+                                                          values_dict['pressure'], values_dict['discharge'], \
+                                                          values_dict['Fw'],  values_dict['Fpaa']
 
             # Run and get the reward
             # observation is a class which contains all the variables, e.g. observation.Fs.y[k], observation.Fs.t[k]
