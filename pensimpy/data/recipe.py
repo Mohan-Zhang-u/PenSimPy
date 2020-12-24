@@ -169,8 +169,6 @@ class Recipe:
             self.add_setpoint(sp)
 
     def find_setpoints_interval(self, time: float) -> Tuple[Setpoint, Setpoint]:
-        assert DEFAULT_MIN_TIME_IN_HOUR <= time <= DEFAULT_MAX_TIME_IN_HOUR, \
-            f"time = {time} out of range [{DEFAULT_MIN_TIME_IN_HOUR}, {DEFAULT_MAX_TIME_IN_HOUR}]"
         assert len(self.sp_list) > 0, "no setpoints available"
 
         if len(self.sp_list) == 1:
@@ -179,9 +177,11 @@ class Recipe:
         left_bound_time = self.sp_list[0].time
         right_bound_time = self.sp_list[-1].time
 
+        # back-fill when pass left bound
         if time < left_bound_time:
             return self.sp_list[0], self.sp_list[0]
 
+        # forward-fill when pass right bound
         if time > right_bound_time:
             return self.sp_list[-1], self.sp_list[-1]
 
@@ -250,7 +250,7 @@ class Recipe:
 
         return round(val, float_precision)
 
-    def get_points(self, is_auto_completed: bool = False,
+    def get_points(self, bfill_from: float = None, ffill_to: float = None,
                    value_type: ValueType = ValueType.NORMAL,
                    safety_limit: SafetyLimit = None) -> List[List]:
 
@@ -258,12 +258,17 @@ class Recipe:
 
         assert len(time_list) > 0, "no setpoints available"
 
-        if is_auto_completed:
-            if time_list[0] != DEFAULT_MIN_TIME_IN_HOUR:
-                time_list = [DEFAULT_MIN_TIME_IN_HOUR] + time_list
+        if bfill_from is not None:
+            assert bfill_from <= time_list[0], "Can't back-fill points to the given time, " \
+                                               "it must be less than or equals to the time of the first setpoint"
+            if time_list[0] != bfill_from:
+                time_list = [bfill_from] + time_list
 
-            if time_list[-1] != DEFAULT_MAX_TIME_IN_HOUR:
-                time_list = time_list + [DEFAULT_MAX_TIME_IN_HOUR]
+        if ffill_to is not None:
+            assert ffill_to >= time_list[-1], "Can't forward-fill points to the given time, " \
+                                              "it must be greater than or equals the time of the last setpoint"
+            if time_list[-1] != ffill_to:
+                time_list = time_list + [ffill_to]
 
         points_list = []
 
