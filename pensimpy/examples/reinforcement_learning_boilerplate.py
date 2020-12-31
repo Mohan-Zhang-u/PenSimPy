@@ -1,7 +1,8 @@
 import time
 import random
 import numpy as np
-from pensimpy.data.recipe import RecipeCombo, Recipe
+from hilo.core.recipe import Recipe, FillingMethod
+from hilo.core.recipe_combo import RecipeCombo
 from pensimpy.data.constants import FS, FOIL, FG, PRES, DISCHARGE, WATER, PAA, DEFAULT_PENICILLIN_RECIPE_ORDER
 from pensimpy.data.constants import FS_DEFAULT_PROFILE, FOIL_DEFAULT_PROFILE, FG_DEFAULT_PROFILE, \
     PRESS_DEFAULT_PROFILE, DISCHARGE_DEFAULT_PROFILE, WATER_DEFAULT_PROFILE, PAA_DEFAULT_PROFILE
@@ -57,7 +58,8 @@ def run(episodes=1000):
             Fs_a, Foil_a, Fg_a, pres_a, discharge_a, Fw_a, Fpaa_a = actions
 
             """Get action from recipe agent based on k_timestep"""
-            values_dict = recipe_combo.get_values_dict_at(k_timestep * STEP_IN_MINUTES)
+            values_dict = recipe_combo.get_values_dict_at(k_timestep * STEP_IN_MINUTES,
+                                                          FillingMethod.BACKWARD)
             Fs, Foil, Fg, pressure, discharge, Fw, Fpaa = values_dict['Fs'], values_dict['Foil'], values_dict['Fg'], \
                                                           values_dict['pressure'], values_dict['discharge'], \
                                                           values_dict['Fw'], values_dict['Fpaa']

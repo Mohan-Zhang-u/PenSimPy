@@ -1,6 +1,7 @@
+from hilo.core.recipe import Recipe
+from hilo.core.recipe_combo import RecipeCombo
 from pensimpy.peni_env_setup import PenSimEnv
-from pensimpy.data.recipe import RecipeCombo, Recipe
-from pensimpy.data.constants import FS, FOIL, FG, PRES, DISCHARGE, WATER, PAA, DEFAULT_PENICILLIN_RECIPE_ORDER
+from pensimpy.data.constants import FS, FOIL, FG, PRES, DISCHARGE, WATER, PAA
 from pensimpy.data.constants import FS_DEFAULT_PROFILE, FOIL_DEFAULT_PROFILE, FG_DEFAULT_PROFILE, \
     PRESS_DEFAULT_PROFILE, DISCHARGE_DEFAULT_PROFILE, WATER_DEFAULT_PROFILE, PAA_DEFAULT_PROFILE
 
