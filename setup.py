@@ -9,7 +9,7 @@ with open("requirements.txt", "r") as fh:
 
 setuptools.setup(
     name="pensimpy", 
-    version="1.1.0",
+    version="1.2.0",
     author="Quartic",
     author_email="",
     description="Python version of IndPenSim.",

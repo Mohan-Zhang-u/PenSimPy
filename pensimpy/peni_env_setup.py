@@ -792,5 +792,4 @@ class PenSimEnv:
                                                               Fs, Foil, Fg, pressure, discharge, Fw, Fpaa)
             batch_yield += reward
 
-        print(f"=== Yield {round(batch_yield, 6)} Kg in {round(time.time() - t, 3)}s")
-        return get_dataframe(batch_data, include_raman)
+        return get_dataframe(batch_data, include_raman), batch_yield
