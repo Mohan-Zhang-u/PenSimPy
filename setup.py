@@ -1,4 +1,5 @@
 import setuptools
+from pensimpy._version import __version__
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -9,7 +10,7 @@ with open("requirements.txt", "r") as fh:
 
 setuptools.setup(
     name="pensimpy", 
-    version="1.2.0",
+    version=__version__,
     author="Quartic",
     author_email="",
     description="Python version of IndPenSim.",
