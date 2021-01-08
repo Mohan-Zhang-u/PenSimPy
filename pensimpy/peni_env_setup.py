@@ -7,7 +7,8 @@ from scipy.integrate import odeint
 from scipy.interpolate import interp1d
 from pensimpy.data.ctrl_flags import CtrlFlags
 from pensimpy.data.batch_data import X0, Xinterp, U, X
-from pensimpy.constants import RAMAN_SPECTRA, RAMAN_WAVENUMBER, STEP_IN_MINUTES, BATCH_LENGTH_IN_HOURS, STEP_IN_HOURS, NUM_STEPS, WAVENUMBER_LENGTH
+from pensimpy.constants import RAMAN_SPECTRA, RAMAN_WAVENUMBER, STEP_IN_MINUTES, BATCH_LENGTH_IN_HOURS, STEP_IN_HOURS, \
+    NUM_STEPS, WAVENUMBER_LENGTH, MINUTES_PER_HOUR
 from pensimpy.ode.indpensim_ode_py import indpensim_ode_py
 from pensimpy.utils import pid_controller, smooth, get_dataframe, get_observation_data
 import fastodeint
@@ -769,7 +770,6 @@ class PenSimEnv:
         """
         self.random_seed_ref = random_seed
 
-        t = time.time()
         done = False
         observation, batch_data = self.reset()
         k_timestep, batch_yield, yield_pre = 0, 0, 0
@@ -778,7 +778,7 @@ class PenSimEnv:
         while not done:
             k_timestep += 1
             # Get action from recipe agent based on time
-            values_dict = self.recipe_combo.get_values_dict_at(time=k_timestep * STEP_IN_MINUTES,
+            values_dict = self.recipe_combo.get_values_dict_at(time=k_timestep * STEP_IN_MINUTES / MINUTES_PER_HOUR,
                                                                filling_method=FillingMethod.BACKWARD)
             Fs, Foil, Fg, pressure, discharge, Fw, Fpaa = values_dict['Fs'], values_dict['Foil'], values_dict['Fg'], \
                                                           values_dict['pressure'], values_dict['discharge'], \
