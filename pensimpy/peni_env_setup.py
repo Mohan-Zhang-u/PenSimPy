@@ -770,7 +770,6 @@ class PenSimEnv:
         """
         self.random_seed_ref = random_seed
 
-        t = time.time()
         done = False
         observation, batch_data = self.reset()
         k_timestep, batch_yield, yield_pre = 0, 0, 0
