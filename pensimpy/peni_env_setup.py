@@ -1,8 +1,5 @@
 import numpy as np
 import math
-import time
-
-from hilo.core.recipe import FillingMethod
 from scipy.integrate import odeint
 from scipy.interpolate import interp1d
 from pensimpy.data.ctrl_flags import CtrlFlags
@@ -778,8 +775,7 @@ class PenSimEnv:
         while not done:
             k_timestep += 1
             # Get action from recipe agent based on time
-            values_dict = self.recipe_combo.get_values_dict_at(time=k_timestep * STEP_IN_MINUTES / MINUTES_PER_HOUR,
-                                                               filling_method=FillingMethod.BACKWARD)
+            values_dict = self.recipe_combo.get_values_dict_at(time=k_timestep * STEP_IN_MINUTES / MINUTES_PER_HOUR)
             Fs, Foil, Fg, pressure, discharge, Fw, Fpaa = values_dict['Fs'], values_dict['Foil'], values_dict['Fg'], \
                                                           values_dict['pressure'], values_dict['discharge'], \
                                                           values_dict['Fw'],  values_dict['Fpaa']
