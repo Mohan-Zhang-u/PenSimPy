@@ -1,4 +1,4 @@
-from hilo.core.recipe import Recipe
+from hilo.core.recipe import Recipe, FillingMethod
 from hilo.core.recipe_combo import RecipeCombo
 from pensimpy.peni_env_setup import PenSimEnv
 from pensimpy.data.constants import FS, FOIL, FG, PRES, DISCHARGE, WATER, PAA
@@ -19,7 +19,7 @@ def run():
                    WATER: Recipe(WATER_DEFAULT_PROFILE, WATER),
                    PAA: Recipe(PAA_DEFAULT_PROFILE, PAA)}
 
-    recipe_combo = RecipeCombo(recipe_dict=recipe_dict)
+    recipe_combo = RecipeCombo(recipe_dict=recipe_dict, filling_method=FillingMethod.BACKWARD)
     env = PenSimEnv(recipe_combo=recipe_combo)
 
     return env.get_batches(random_seed=1, include_raman=False)
