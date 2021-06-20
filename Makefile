@@ -34,5 +34,9 @@ version:
 
 publish: override VERSION := $(if $(VERSION),$(VERSION),)
 publish: WHEEL_FILENAME := $(PROJECT_NAME)-$(VERSION)-py3-$(OS)-$(CPU_ARCH).whl
+
+test-publish: publish
+	twine upload --repository testpypi dist/$(WHEEL_FILENAME)
+
 publish:
-	curl -F package=@dist/$(WHEEL_FILENAME) https://$(GEMFURY_AUTH_TOKEN)@push.fury.io/quartic-ai/
+	twine upload --repository pypi dist/$(WHEEL_FILENAME)
