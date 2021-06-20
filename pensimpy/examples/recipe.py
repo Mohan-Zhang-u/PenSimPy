@@ -104,8 +104,7 @@ class RecipeCombo:
         """
         Get value of each recipe at given time
         """
-        values_dict = {}
-        for name, recipe in self.recipe_dict.items():
-            values_dict[name] = recipe.get_value_at(time=time)
-
-        return values_dict
+        return {
+            name: recipe.get_value_at(time=time)
+            for name, recipe in self.recipe_dict.items()
+        }
