@@ -16,8 +16,8 @@ A web application based on PenSimPy can be found [here](http://quartic.ddns.net:
 
 Installation
 ============
-PenSimPy relies on [fastodeint](https://github.com/Quarticai/fastodeint), and the prerequisites for [fastodeint](https://github.com/Quarticai/fastodeint) installation can be found [here](https://github.com/Quarticai/fastodeint).
-Then you can install PenSimPy by the following command
+PenSimPy relies on [fastodeint](https://github.com/Quarticai/fastodeint), a python bindings for an ODE solver implemented in C++. Unfortunely, it's not available as a PyPI package at this point, so you need to follow the installation instruction [here](https://github.com/Quarticai/fastodeint/blob/master/README.md) to build it yourself.
+Once fastodeint is installed, you can install PenSimPy by the following command
 ```
 pip install pensimpy
 ```

@@ -1,6 +1,0 @@
---extra-index-url https://pypi.fury.io/cofDNgE692FsjZ5iiShW/quartic-ai/
-numpy==1.18.2
-pandas==1.0.3
-scipy==1.4.1
-fastodeint==0.0.1
-hilo==0.7.0
