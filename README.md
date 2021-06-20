@@ -2,7 +2,7 @@
 
 **Development Status:** As of 08/2020 PenSimPy is under active maintenance (expect bug fixes and updates). 
 Please follow, star, and fork to get the latest functions.
-# PenSimPy ![](https://img.shields.io/badge/python-3.6.8-orange) ![](https://img.shields.io/badge/c%2B%2B-11-blue)
+# PenSimPy ![](https://img.shields.io/badge/python-3.8.0-orange) ![](https://img.shields.io/badge/c%2B%2B-11-blue)
 PenSimPy is a Python version of [IndPenSim](http://www.industrialpenicillinsimulation.com/), which simulates the industrial-scale Penicillium chrysogenum fermentation. 
 This simulator is based on `c++` solving the ODE functions so as to achieve a faster performance than the MATLAB version. 
 
