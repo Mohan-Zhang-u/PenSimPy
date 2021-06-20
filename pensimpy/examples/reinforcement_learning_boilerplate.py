@@ -1,11 +1,11 @@
 import time
 import random
+
 import numpy as np
-from hilo.core.recipe import Recipe, FillingMethod
-from hilo.core.recipe_combo import RecipeCombo
 from pensimpy.data.constants import FS, FOIL, FG, PRES, DISCHARGE, WATER, PAA
 from pensimpy.data.constants import FS_DEFAULT_PROFILE, FOIL_DEFAULT_PROFILE, FG_DEFAULT_PROFILE, \
     PRESS_DEFAULT_PROFILE, DISCHARGE_DEFAULT_PROFILE, WATER_DEFAULT_PROFILE, PAA_DEFAULT_PROFILE
+from pensimpy.examples.recipe import Recipe, RecipeCombo
 from pensimpy.peni_env_setup import PenSimEnv
 from pensimpy.constants import STEP_IN_MINUTES
 
@@ -42,7 +42,7 @@ def run(episodes=1000):
                        WATER: Recipe(WATER_DEFAULT_PROFILE, WATER),
                        PAA: Recipe(PAA_DEFAULT_PROFILE, PAA)}
 
-        recipe_combo = RecipeCombo(recipe_dict=recipe_dict, filling_method=FillingMethod.BACKWARD)
+        recipe_combo = RecipeCombo(recipe_dict=recipe_dict)
 
         env = PenSimEnv(recipe_combo=recipe_combo)
         done = False
@@ -79,3 +79,7 @@ def run(episodes=1000):
         print(f"episode: {e}, elapsed time: {int(time.time() - t)} s, batch_yield: {batch_yield}")
         batch_yield_list.append(batch_yield)
     return batch_yield_list
+
+
+if __name__ == "__main__":
+    run()
