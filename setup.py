@@ -13,15 +13,12 @@ setuptools.setup(
     version=__version__,
     author="Quartic",
     author_email="",
-    description="Python version of IndPenSim.",
+    description="The Python implementation of IndPenSim",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/Quarticai/PenSimPy.git",
     packages=setuptools.find_packages(),
     install_requires=requirements,
-    dependency_links=[
-        'https://pypi.fury.io/cofDNgE692FsjZ5iiShW/quartic-ai/'
-    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
