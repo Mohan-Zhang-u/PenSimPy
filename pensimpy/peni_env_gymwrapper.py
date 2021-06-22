@@ -14,6 +14,7 @@ from pensimpy.data.constants import FS_DEFAULT_PROFILE, FOIL_DEFAULT_PROFILE, FG
     PRESS_DEFAULT_PROFILE, DISCHARGE_DEFAULT_PROFILE, WATER_DEFAULT_PROFILE, PAA_DEFAULT_PROFILE
 
 csv.field_size_limit(sys.maxsize)
+random.seed(0)
 MINUTES_PER_HOUR = 60
 BATCH_LENGTH_IN_MINUTES = 230 * MINUTES_PER_HOUR
 BATCH_LENGTH_IN_HOURS = 230
@@ -145,14 +146,13 @@ class PenSimEnvGym(PenSimEnv, Env):
         values_dict = self.recipe_combo.get_values_dict_at(self.k * STEP_IN_MINUTES)
         # served as a batch buffer below
         pensimpy_observation, x, yield_per_run, done = super().step(self.k, self.x, action[1], action[2], action[3], action[4], action[0], action[5], values_dict['Fpaa'])
-        reward = yield_per_run + x.discharge.y[self.k - 1] * x.P.y[self.k - 1] * STEP_IN_HOURS / 1000
         self.x = x
         new_observation = get_observation_data_reformed(x, self.k - 1)
         new_observation = np.array(new_observation, dtype=np.float32)
         if self.normalize:
             new_observation, _, _ = normalize_spaces(new_observation, self.max_observations, self.min_observations)
 
-        return new_observation, reward, done, {}
+        return new_observation, yield_per_run, done, {}
         # state, reward, done, info in gym env term
 
 
@@ -161,7 +161,7 @@ class PeniControlData:
     dataset class helper, mainly aims to mimic d4rl's qlearning_dataset format (which returns a dictionary).
     produced from PenSimPy generated csvs.
     """
-    def __init__(self, dataset_folder='examples/example_batches', delimiter=',', state_dim=9, action_dim=6) -> None:
+    def __init__(self, load_just_a_file='', dataset_folder='examples/example_batches', delimiter=',', state_dim=9, action_dim=6) -> None:
         """
         :param dataset_folder: where all dataset csv files are living in
         """
@@ -169,7 +169,10 @@ class PeniControlData:
         self.delimiter = delimiter
         self.state_dim = state_dim
         self.action_dim = action_dim
-        file_list = get_things_in_loc(dataset_folder, just_files=True)
+        if load_just_a_file!= '':
+            file_list = [load_just_a_file]
+        else:
+            file_list = get_things_in_loc(dataset_folder, just_files=True)
         self.file_list = file_list
 
     def load_file_list_to_dict(self, file_list, shuffle=True):
@@ -244,8 +247,8 @@ if __name__ == '__main__':
     env = PenSimEnvGym(recipe_combo=recipe_combo)
 
     state = env.reset()
-    dataset_folder=os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples/example_batches')
-    dataset_obj = PeniControlData(dataset_folder=dataset_folder)
+    load_just_a_file=os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples/example_batches/random_batch_0.csv')
+    dataset_obj = PeniControlData(load_just_a_file=load_just_a_file)
     if dataset_obj.file_list:
         print('Penicillin_Control_Challenge data correctly initialized.')
     else:
@@ -260,4 +263,4 @@ if __name__ == '__main__':
     for step in range(NUM_STEPS):
         state, reward, done, info = env.step(dataset['actions'][step].tolist())
         total_reward += reward
-    print("your total reward is:", total_reward)
+    print("your total reward is (by default, should be 2965.6227):", total_reward)
