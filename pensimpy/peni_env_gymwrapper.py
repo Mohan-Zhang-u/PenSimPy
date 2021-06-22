@@ -78,9 +78,7 @@ def get_things_in_loc(in_path, just_files=True):
 def normalize_spaces(space, max_space=None, min_space=None):
     """
     normalize each column of observation/action(e.g. Sugar feed rate) to be in [-1,1] such that it looks like a Box
-
     and space can be the whole original space (X by D) or just one row in the original space (D,)
-
     :param space: numpy array
     """
     assert not isinstance(space, list)
